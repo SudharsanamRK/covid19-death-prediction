@@ -427,278 +427,236 @@ elif page == "Single Prediction":
     else:
         st.error("Model not available.")
 
+# Repository data used by the country explorer
+@st.cache_data
+def load_country_dataset():
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    path = os.path.join(root, "data", "country_wise_latest.csv")
+    if os.path.exists(path):
+        return pd.read_csv(path), path
+    return None, None
+
+country_data, country_data_path = load_country_dataset()
+
 # PAGE 3: BATCH PREDICTION (CSV)
 elif page == "Batch Prediction (CSV)":
-    st.markdown("## Batch Prediction from CSV")
-    
-    st.info("""
-    **Upload a CSV file** with multiple entries to get predictions for all at once.
-    
-    **Required columns:**
-    - `Confirmed` - Total confirmed cases
-    - `Active` - Active cases
-    - `New_Cases` - New cases in 24h
-    - `Beds_per_1000` - Hospital beds per 1000 population
-    """)
-    
-    # Sample CSV Download
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        sample_data = {
-            'Confirmed': [10000, 25000, 50000],
-            'Active': [5000, 12000, 30000],
-            'New_Cases': [500, 1200, 2500],
-            'Beds_per_1000': [2.5, 3.0, 1.8]
-        }
-        sample_df = pd.DataFrame(sample_data)
-        csv_sample = sample_df.to_csv(index=False)
-        st.download_button(
-            label="Download Sample CSV",
-            data=csv_sample,
-            file_name='sample_covid_data.csv',
-            mime='text/csv',
-        )
-    
-    with col2:
-        st.markdown("**Sample CSV format preview:**")
-        st.dataframe(sample_df, use_container_width=True)
-    
-    st.markdown("---")
-    
-    # File upload
-    uploaded_file = st.file_uploader("Upload Your CSV File", type=['csv'])
-    
-    if uploaded_file is not None and model is not None:
+    st.markdown("""
+    <div class="batch-hero">
+      <div class="batch-kicker">BULK WORKSPACE · CSV PROCESSING</div>
+      <h1>One file. <span>Many predictions.</span></h1>
+      <p>Validate your dataset, run the mortality model across every valid row, inspect the output and export a processed report.</p>
+      <div class="batch-tags"><span>CSV UPLOAD</span><span>ROW VALIDATION</span><span>BULK INFERENCE</span></div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    .batch-hero,.insight-hero,.country-hero {position:relative;overflow:hidden;padding:2rem 2.1rem;margin:.35rem 0 1.35rem;border-radius:21px;background:linear-gradient(115deg,#073b34,#0b6657 66%,#0b8c73);box-shadow:0 14px 32px rgba(7,59,52,.13)}
+    .batch-hero:after,.insight-hero:after,.country-hero:after {content:'';position:absolute;width:240px;height:240px;right:-75px;top:-125px;border:1px solid rgba(199,243,107,.4);border-radius:50%;box-shadow:0 0 0 22px rgba(199,243,107,.06),0 0 0 46px rgba(199,243,107,.035)}
+    .batch-kicker,.insight-kicker,.country-kicker {color:#c7f36b;font:600 .7rem 'IBM Plex Mono',monospace;letter-spacing:.12em;margin-bottom:1rem}
+    .batch-hero h1,.insight-hero h1,.country-hero h1 {color:#fff;font-size:clamp(2rem,4vw,3rem);line-height:1.05;letter-spacing:-.05em;margin:0 0 .7rem}
+    .batch-hero h1 span,.insight-hero h1 span,.country-hero h1 span {color:#c7f36b}
+    .batch-hero p,.insight-hero p,.country-hero p {color:#d2eee3;max-width:760px;font-size:1rem;line-height:1.65;margin:0 0 1.1rem}
+    .batch-tags,.insight-tags,.country-tags {display:flex;flex-wrap:wrap;gap:.45rem;position:relative;z-index:1}
+    .batch-tags span,.insight-tags span,.country-tags span {color:#effff6;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);padding:.35rem .65rem;border-radius:999px;font:500 .64rem 'IBM Plex Mono',monospace}
+    .work-panel,.insight-panel,.country-panel {background:#fff;border:1px solid #dce9e2;border-radius:17px;padding:1.15rem 1.25rem;margin:.4rem 0 1rem}
+    .work-note,.insight-note,.country-note {padding:1rem 1.15rem;border:1px solid #d4e9dd;border-left:4px solid #19b887;background:#effaf3;color:#31584f;border-radius:13px;line-height:1.6;margin:.8rem 0 1rem}
+    .work-kicker,.insight-kicker-small,.country-kicker-small {color:#0b9476;font:600 .68rem 'IBM Plex Mono',monospace;letter-spacing:.1em;margin-bottom:.45rem}
+    .work-panel h3,.insight-panel h3,.country-panel h3 {color:#103b35;margin:.1rem 0 .55rem}
+    .work-panel p,.insight-panel p,.country-panel p {color:#55766e;line-height:1.6}
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown("### Start with a template")
+    st.caption("Download the sample structure, add one observation per row, then upload your file.")
+    template_df = pd.DataFrame({"Confirmed":[10000,25000,50000],"Active":[5000,12000,30000],"New cases":[500,1200,2500],"Hospital_beds_per_1000":[2.5,3.0,1.8]})
+    c1,c2 = st.columns([1,1.5],gap="large")
+    with c1:
+        st.download_button("Download CSV template  ↓",template_df.to_csv(index=False).encode("utf-8"),"mortality_lab_template.csv","text/csv",use_container_width=True)
+        st.markdown('<div class="work-note"><strong>Required inputs</strong><br>Confirmed · Active · New cases · Hospital beds per 1,000</div>',unsafe_allow_html=True)
+    with c2:
+        st.dataframe(template_df,use_container_width=True,hide_index=True)
+
+    st.markdown("### Upload your dataset")
+    uploaded_file = st.file_uploader("Choose a CSV file",type=["csv"],key="batch_csv_upload")
+    if uploaded_file is not None:
         try:
-            df = pd.read_csv(uploaded_file)
-            
-            st.success(f"File uploaded successfully! Found {len(df)} rows.")
-            
-            # Validate columns
-            required_cols = ['Confirmed', 'Active', 'New_Cases', 'Beds_per_1000']
-            missing_cols = [col for col in required_cols if col not in df.columns]
-            
-            if missing_cols:
-                st.error(f"Missing columns: {', '.join(missing_cols)}")
+            uploaded_file.seek(0)
+            raw_df = pd.read_csv(uploaded_file)
+            if raw_df.empty:
+                st.error("The CSV contains no data rows.")
+            elif len(raw_df)>50000:
+                st.error("This workspace supports up to 50,000 rows per upload.")
             else:
-                st.markdown("### Uploaded Data Preview")
-                st.dataframe(df.head(10), use_container_width=True)
-                
-                if st.button("Run Batch Prediction", use_container_width=True):
-                    with st.spinner("Processing predictions..."):
-                        predictions = []
-                        mortality_rates = []
-                        risk_levels = []
-                        
-                        for idx, row in df.iterrows():
-                            features = np.array([[row['Confirmed'], row['Active'], 
-                                                row['New_Cases'], row['Beds_per_1000']]])
-                            pred = model.predict(features)[0]
-                            predicted_deaths = max(0, int(pred))
-                            predictions.append(predicted_deaths)
-                            
-                            mortality_rate = (predicted_deaths / row['Confirmed'] * 100) if row['Confirmed'] > 0 else 0
-                            mortality_rates.append(round(mortality_rate, 2))
-                            
-                            if mortality_rate < 1:
-                                risk_levels.append("🟢 Low")
-                            elif mortality_rate < 3:
-                                risk_levels.append("🟡 Moderate")
-                            else:
-                                risk_levels.append("🔴 High")
-                        
-                        df['Predicted_Deaths'] = predictions
-                        df['Mortality_Rate_%'] = mortality_rates
-                        df['Risk_Level'] = risk_levels
-                        
-                        st.success("Predictions completed!")
-                        
-                        # Display results
-                        st.markdown("### Prediction Results")
-                        st.dataframe(df, use_container_width=True)
-                        
-                        # Summary statistics
-                        col1, col2, col3 = st.columns(3)
-                        with col1:
-                            st.metric("Total Predicted Deaths", f"{df['Predicted_Deaths'].sum():,}")
-                        with col2:
-                            st.metric("Average Mortality Rate", f"{df['Mortality_Rate_%'].mean():.2f}%")
-                        with col3:
-                            high_risk_count = len(df[df['Risk_Level'] == "🔴 High"])
-                            st.metric("High Risk Entries", high_risk_count)
-                        
-                        # Visualization
-                        st.markdown("### Batch Analysis")
-                        
-                        fig = go.Figure()
-                        fig.add_trace(go.Bar(
-                            x=df.index,
-                            y=df['Predicted_Deaths'],
-                            name='Predicted Deaths',
-                            marker_color='#e74c3c'
-                        ))
-                        fig.update_layout(
-                            title="Predicted Deaths by Entry",
-                            xaxis_title="Entry Index",
-                            yaxis_title="Deaths",
-                            height=400
-                        )
-                        st.plotly_chart(fig, use_container_width=True)
-                        
-                        # Download results
-                        csv_results = df.to_csv(index=False)
-                        st.download_button(
-                            label="Download Results CSV",
-                            data=csv_results,
-                            file_name=f'batch_predictions_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv',
-                            mime='text/csv',
-                        )
-                        
-        except Exception as e:
-            st.error(f"Error processing file: {str(e)}")
-    elif model is None:
-        st.error("Model not available.")
+                aliases = {"confirmed":"Confirmed","confirmed cases":"Confirmed","active":"Active","active cases":"Active","new cases":"New cases","new_cases":"New cases","new cases (24h)":"New cases","hospital_beds_per_1000":"Hospital_beds_per_1000","beds_per_1000":"Hospital_beds_per_1000","hospital beds per 1000":"Hospital_beds_per_1000"}
+                rename_map = {c:aliases[str(c).strip().lower()] for c in raw_df.columns if str(c).strip().lower() in aliases}
+                input_df = raw_df.rename(columns=rename_map).copy()
+                required = ["Confirmed","Active","New cases","Hospital_beds_per_1000"]
+                missing = [c for c in required if c not in input_df.columns]
+                if missing:
+                    st.error("Missing required columns: "+", ".join(missing))
+                    st.caption("Detected columns: "+", ".join(map(str,raw_df.columns)))
+                    st.info("Use the template above. Common variants such as New_Cases and Beds_per_1000 are accepted.")
+                else:
+                    numeric = input_df[required].apply(pd.to_numeric,errors="coerce")
+                    finite = np.isfinite(numeric.to_numpy(dtype=float)).all(axis=1)
+                    nonnegative = (numeric>=0).all(axis=1).to_numpy()
+                    active_ok = (numeric["Active"]<=numeric["Confirmed"]).to_numpy()
+                    valid = finite & nonnegative & active_ok
+                    st.markdown("### File quality check")
+                    q1,q2,q3,q4 = st.columns(4)
+                    q1.metric("Rows received",f"{len(raw_df):,}")
+                    q2.metric("Valid rows",f"{int(valid.sum()):,}")
+                    q3.metric("Rows to review",f"{int((~valid).sum()):,}")
+                    q4.metric("Inputs mapped","4 / 4")
+                    st.dataframe(raw_df.head(8),use_container_width=True,hide_index=True)
+                    if (~valid).any():
+                        issues = pd.DataFrame({"CSV row":np.where(~valid)[0]+2,"Issue":["Missing or non-numeric value" if not finite[i] else "Negative input" if not nonnegative[i] else "Active exceeds confirmed" for i in np.where(~valid)[0]]})
+                        with st.expander("Review invalid rows"):
+                            st.dataframe(issues,use_container_width=True,hide_index=True)
+                    if model is None:
+                        st.error("The model is unavailable; predictions cannot be generated.")
+                    elif not valid.any():
+                        st.warning("There are no valid rows to process. Correct the input data and upload it again.")
+                    elif st.button(f"Generate predictions for {int(valid.sum()):,} valid rows",type="primary",use_container_width=True):
+                        with st.spinner("Running model inference..."):
+                            features = numeric.loc[valid,required].copy()
+                            if hasattr(model,"feature_names_in_"):
+                                features = features[list(model.feature_names_in_)]
+                            predictions = np.maximum(0,model.predict(features))
+                            result = raw_df.copy()
+                            result["Prediction status"] = np.where(valid,"Processed","Needs review")
+                            result["Predicted deaths"] = np.nan
+                            result["Estimated deaths / 100 confirmed (%)"] = np.nan
+                            result.loc[valid,"Predicted deaths"] = np.rint(predictions).astype(int)
+                            confirmed = numeric.loc[valid,"Confirmed"].to_numpy()
+                            rates = np.divide(predictions,confirmed,out=np.zeros_like(predictions,dtype=float),where=confirmed>0)*100
+                            result.loc[valid,"Estimated deaths / 100 confirmed (%)"] = np.round(rates,2)
+                            st.session_state["batch_prediction_result"] = result
+                            st.session_state["batch_prediction_source"] = uploaded_file.name
+                    result = st.session_state.get("batch_prediction_result")
+                    if result is not None and len(result)==len(raw_df) and st.session_state.get("batch_prediction_source")==uploaded_file.name:
+                        done = result[result["Prediction status"]=="Processed"]
+                        st.markdown("### Prediction results")
+                        a,b,c = st.columns(3)
+                        a.metric("Processed rows",f"{len(done):,}")
+                        b.metric("Estimated deaths · total",f"{int(done['Predicted deaths'].sum()):,}")
+                        c.metric("Needs review",f"{len(result)-len(done):,}")
+                        st.dataframe(result,use_container_width=True,hide_index=True)
+                        if not done.empty:
+                            plot_df=done.head(30).copy()
+                            plot_df["CSV row"]=plot_df.index+2
+                            fig=px.bar(plot_df,x="CSV row",y="Predicted deaths",title="Predicted deaths · first 30 processed rows",color_discrete_sequence=["#0b8f78"])
+                            fig.update_layout(template="plotly_white",height=360,margin=dict(l=15,r=15,t=55,b=15),xaxis_title="CSV row",yaxis_title="Predicted deaths")
+                            st.plotly_chart(fig,use_container_width=True,config={"displayModeBar":False})
+                        st.download_button("Download processed results  ↓",result.to_csv(index=False).encode("utf-8"),f"mortality_batch_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv","text/csv",use_container_width=True)
+        except Exception as exc:
+            st.error(f"Unable to read or process this CSV: {exc}")
+    else:
+        st.markdown('<div class="work-panel"><div class="work-kicker">WORKSPACE READY</div><h3>Your batch analysis starts here</h3><p>Upload a CSV to preview its structure, validate rows, run predictions and export a result report. Your original file is never modified.</p></div>',unsafe_allow_html=True)
 
 # PAGE 4: MODEL INSIGHTS
 elif page == "Model Insights":
-    st.markdown("## Model Insights & Feature Importance")
-    
-    st.info("""
-    **Understanding the Model:** This section shows which features have the most impact on predictions.
-    Feature importance helps explain how the model makes decisions.
-    """)
-    
-    if model is not None:
-        # Check if model has feature_importances_
-        if hasattr(model, 'feature_importances_'):
-            importances = model.feature_importances_
-            features = ['Confirmed Cases', 'Active Cases', 'New Cases (24h)', 'Hospital Beds per 1000']
-            
-            # Create DataFrame
-            importance_df = pd.DataFrame({
-                'Feature': features,
-                'Importance': importances
-            }).sort_values('Importance', ascending=True)
-            
-            st.markdown("### Feature Importance Analysis")
-            
-            # Horizontal bar chart
-            fig = go.Figure(go.Bar(
-                x=importance_df['Importance'],
-                y=importance_df['Feature'],
-                orientation='h',
-                marker=dict(color='#3498db')
-            ))
-            fig.update_layout(
-                title="Feature Importance (Higher = More Impact)",
-                xaxis_title="Importance Score",
-                yaxis_title="Feature",
-                height=400
-            )
-            st.plotly_chart(fig, use_container_width=True)
-            
-            # Interpretation
-            st.markdown("### Interpretation")
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.markdown("""
-                **What does this mean?**
-                - Features with higher importance scores have more influence on predictions
-                - The model relies more heavily on top-ranked features
-                - Lower-ranked features still contribute but with less weight
-                """)
-            
-            with col2:
-                # Show sorted importance
-                st.markdown("**Ranking:**")
-                for idx, row in importance_df.sort_values('Importance', ascending=False).iterrows():
-                    st.markdown(f"{row['Feature']}: `{row['Importance']:.3f}`")
-        
-        else:
-            st.warning("""
-            Feature importance is not available for this model type.
-            
-            **Note:** Linear models use coefficients instead of feature importance.
-            If you're using Linear Regression, coefficients show feature impact.
-            """)
-            
-            # Try to show coefficients if available
-            if hasattr(model, 'coef_'):
-                st.markdown("### Model Coefficients")
-                features = ['Confirmed Cases', 'Active Cases', 'New Cases (24h)', 'Hospital Beds per 1000']
-                coefs = model.coef_
-                
-                coef_df = pd.DataFrame({
-                    'Feature': features,
-                    'Coefficient': coefs
-                }).sort_values('Coefficient', ascending=True)
-                
-                fig = go.Figure(go.Bar(
-                    x=coef_df['Coefficient'],
-                    y=coef_df['Feature'],
-                    orientation='h',
-                    marker=dict(color='#3498db')
-                ))
-                fig.update_layout(
-                    title="Model Coefficients",
-                    xaxis_title="Coefficient Value",
-                    yaxis_title="Feature",
-                    height=400
-                )
-                st.plotly_chart(fig, use_container_width=True)
+    st.markdown("""
+    <div class="insight-hero"><div class="insight-kicker">MODEL TRANSPARENCY · RANDOM FOREST</div><h1>Understand the <span>model behind the estimate.</span></h1><p>Inspect the fitted estimator, its learned feature-importance scores and the limits of what those scores can explain.</p><div class="insight-tags"><span>MODEL PROFILE</span><span>FEATURE IMPORTANCE</span><span>INTERPRETABILITY</span></div></div>
+    """,unsafe_allow_html=True)
+    if model is None:
+        st.error("The trained model could not be loaded.")
     else:
-        st.error("Model not available.")
+        names=list(getattr(model,"feature_names_in_",["Confirmed","Active","New cases","Hospital_beds_per_1000"]))
+        cols=st.columns(4)
+        cols[0].metric("Estimator",type(model).__name__)
+        cols[1].metric("Trees",f"{getattr(model,'n_estimators',0):,}" if hasattr(model,"n_estimators") else "N/A")
+        cols[2].metric("Max depth",str(getattr(model,"max_depth",None) or "Unrestricted"))
+        cols[3].metric("Input features",str(len(names)))
+        left,right=st.columns(2,gap="large")
+        with left:
+            st.markdown('<div class="insight-panel"><div class="insight-kicker-small">ESTIMATOR PROFILE</div><h3>Random Forest regression</h3><p>An ensemble of decision trees. Each tree produces a numeric estimate, and the ensemble aggregates those estimates into the model output.</p><p><strong>Target:</strong> COVID-19 deaths<br><strong>Model artifact:</strong> '+os.path.basename(model_path or "Not found")+'</p></div>',unsafe_allow_html=True)
+        with right:
+            st.markdown('<div class="insight-panel"><div class="insight-kicker-small">INPUT CONTRACT</div><h3>Four model features</h3>'+''.join([f'<p><strong>{i+1:02d}</strong> · {n}</p>' for i,n in enumerate(names)])+'</div>',unsafe_allow_html=True)
+        if hasattr(model,"feature_importances_"):
+            imp=np.asarray(model.feature_importances_,dtype=float)
+            if len(imp)==len(names):
+                importance=pd.DataFrame({"Feature":names,"Importance":imp}).sort_values("Importance",ascending=True)
+                st.markdown("### What the model relies on")
+                st.caption("Built-in impurity-based importance from the fitted forest. Scores sum to 1.0; they are not causal effects or percentage contributions to an individual prediction.")
+                fig=go.Figure(go.Bar(x=importance["Importance"],y=importance["Feature"],orientation="h",marker=dict(color=importance["Importance"],colorscale=[[0,"#b8e8d2"],[1,"#087b68"]]),text=[f"{v:.3f}" for v in importance["Importance"]],textposition="outside"))
+                fig.update_layout(template="plotly_white",height=390,xaxis_title="Relative importance score",yaxis_title="",margin=dict(l=15,r=55,t=25,b=20),xaxis=dict(gridcolor="#e7f0ea"))
+                st.plotly_chart(fig,use_container_width=True,config={"displayModeBar":False})
+                ranking=importance.sort_values("Importance",ascending=False).reset_index(drop=True)
+                x,y=st.columns(2,gap="large")
+                with x:
+                    st.markdown("### Feature ranking")
+                    st.dataframe(ranking,use_container_width=True,hide_index=True)
+                with y:
+                    st.markdown('<div class="insight-panel"><h3>How to interpret</h3><p>Higher scores indicate a feature contributed more to reducing split impurity across the fitted trees. Importance does not show whether a feature raises or lowers a prediction, does not establish causation, and may be affected by correlated inputs.</p></div>',unsafe_allow_html=True)
+            else:
+                st.warning("The model's importance vector does not match its feature-name list. The chart is withheld to avoid incorrect labels.")
+        else:
+            st.info("This estimator does not expose built-in feature importance.")
+        st.markdown("### Evaluation status")
+        st.markdown('<div class="insight-note"><strong>Measured evaluation values are not stored with this model artifact.</strong><br>The training script calculates R², mean absolute error, root mean squared error and cross-validation R², but does not save those results. This page therefore does not display guessed scores.</div>',unsafe_allow_html=True)
+        with st.expander("What should a full evaluation include?"):
+            st.markdown("- R²: variance explained on held-out data.\\n- MAE: average absolute prediction error.\\n- RMSE: error measure that penalizes large misses.\\n- Cross-validation R²: performance across validation folds.\\n- Temporal validation: important before claiming future forecasting performance.")
+        if st.button("Open Single Prediction  →",use_container_width=True):
+            st.session_state["page_navigation"]="Single Prediction"
+            st.rerun()
 
 # PAGE 5: COUNTRY COMPARISON
 elif page == "Country Comparison":
-    st.markdown("## Multi-Country Comparison")
-    
-    st.info("""
-    **Compare COVID-19 metrics across multiple countries/regions.**
-    This feature allows side-by-side analysis of infection rates, mortality, and healthcare capacity.
-    """)
-    
-    st.warning("**Coming Soon!** This feature requires integration with external COVID-19 data APIs.")
-
-    st.markdown("### Planned Features:")
     st.markdown("""
-    - Side-by-side metric comparison
-    - Trend line visualization
-    - Geographic heatmaps
-    - Mortality rate comparisons
-    - Healthcare capacity analysis
-    """)
-    
-    # Demo placeholder
-    st.markdown("### Preview (Demo Data)")
-    
-    demo_data = {
-        'Country': ['USA', 'India', 'Brazil', 'UK', 'Germany'],
-        'Confirmed': [50000000, 45000000, 35000000, 24000000, 38000000],
-        'Deaths': [1000000, 530000, 700000, 210000, 170000],
-        'Active': [500000, 200000, 150000, 50000, 100000],
-        'Beds_per_1000': [2.9, 0.5, 2.1, 2.5, 8.0]
-    }
-    demo_df = pd.DataFrame(demo_data)
-    
-    st.dataframe(demo_df, use_container_width=True)
-    
-    # Demo chart
-    fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=demo_df['Country'],
-        y=demo_df['Deaths'],
-        name='Deaths',
-        marker_color='#e74c3c'
-    ))
-    fig.update_layout(
-        title="COVID-19 Deaths by Country (Demo)",
-        xaxis_title="Country",
-        yaxis_title="Total Deaths",
-        height=400
-    )
-    st.plotly_chart(fig, use_container_width=True)
+    <div class="country-hero"><div class="country-kicker">GLOBAL DATA EXPLORER · HISTORICAL SNAPSHOT</div><h1>Compare the <span>country-level picture.</span></h1><p>Explore the country-wise COVID-19 snapshot stored in this repository, compare reported indicators and inspect differences across regions.</p><div class="country-tags"><span>COUNTRY COMPARISON</span><span>WHO REGION</span><span>HISTORICAL DATA</span></div></div>
+    """,unsafe_allow_html=True)
+    if country_data is None:
+        st.error("The country-wise dataset could not be found in the repository data folder.")
+    else:
+        countries=country_data.copy()
+        countries.columns=[str(c).strip() for c in countries.columns]
+        numeric_cols=["Confirmed","Deaths","Recovered","Active","New cases","New deaths","Confirmed last week","1 week change","Deaths / 100 Cases","Recovered / 100 Cases","1 week % increase"]
+        for col in numeric_cols:
+            if col in countries.columns:
+                countries[col]=pd.to_numeric(countries[col],errors="coerce")
+        countries=countries.dropna(subset=["Country/Region"]).drop_duplicates(subset=["Country/Region"])
+        st.markdown("### Dataset at a glance")
+        a,b,c,d=st.columns(4)
+        a.metric("Countries / regions",f"{len(countries):,}")
+        b.metric("Reported confirmed",f"{int(countries['Confirmed'].fillna(0).sum()):,}")
+        c.metric("Reported deaths",f"{int(countries['Deaths'].fillna(0).sum()):,}")
+        d.metric("WHO regions",str(countries["WHO Region"].nunique()) if "WHO Region" in countries else "N/A")
+        st.markdown('<div class="country-note"><strong>Data context:</strong> This is the static country-wise dataset committed to the repository, not a live feed. Values represent a historical reporting snapshot. Hospital-bed availability is omitted because the merged repository data currently contains zero-filled bed values, which are not reliable measurements.</div>',unsafe_allow_html=True)
+        st.markdown("### Build a comparison")
+        fcol,scol=st.columns([.8,1.2],gap="large")
+        with fcol:
+            regions=sorted(countries["WHO Region"].dropna().unique().tolist()) if "WHO Region" in countries else []
+            region=st.selectbox("Filter by WHO region",["All regions"]+regions)
+            metric_map={"Confirmed cases":"Confirmed","Reported deaths":"Deaths","Active cases":"Active","New cases (24h)":"New cases","Recovered cases":"Recovered","Deaths per 100 confirmed (%)":"Deaths / 100 Cases","Weekly case increase (%)":"1 week % increase"}
+            metrics={k:v for k,v in metric_map.items() if v in countries.columns}
+            metric_label=st.selectbox("Metric to compare",list(metrics.keys()))
+            top_n=st.slider("Countries in ranking",5,min(25,max(5,len(countries))),min(10,max(5,len(countries))))
+        filtered=countries.copy()
+        if region!="All regions" and "WHO Region" in filtered:
+            filtered=filtered[filtered["WHO Region"]==region]
+        options=sorted(filtered["Country/Region"].astype(str).tolist())
+        defaults=[v for v in ["India","US","Brazil"] if v in options] or options[:min(3,len(options))]
+        with scol:
+            selected=st.multiselect("Choose up to 6 countries / regions",options,default=defaults,max_selections=6)
+        metric=metrics[metric_label]
+        if selected:
+            chosen=filtered[filtered["Country/Region"].isin(selected)].copy()
+            st.markdown("### Side-by-side comparison")
+            chart=px.bar(chosen.sort_values(metric,ascending=False),x="Country/Region",y=metric,color="Country/Region",title=metric_label,color_discrete_sequence=px.colors.sequential.Tealgrn)
+            chart.update_layout(template="plotly_white",showlegend=False,height=390,xaxis_title="",yaxis_title=metric_label,margin=dict(l=15,r=15,t=55,b=15),yaxis=dict(gridcolor="#e7f0ea"))
+            st.plotly_chart(chart,use_container_width=True,config={"displayModeBar":False})
+            display=[v for v in ["Country/Region","WHO Region","Confirmed","Deaths","Recovered","Active","New cases","Deaths / 100 Cases","1 week % increase"] if v in chosen.columns]
+            st.dataframe(chosen[display].sort_values(metric,ascending=False),use_container_width=True,hide_index=True)
+            st.download_button("Download selected comparison  ↓",chosen[display].to_csv(index=False).encode("utf-8"),"country_comparison.csv","text/csv",use_container_width=True)
+        else:
+            st.info("Choose at least one country or region to populate the comparison.")
+        st.markdown("### Global ranking")
+        ranking=filtered[["Country/Region",metric]].dropna().sort_values(metric,ascending=False).head(top_n)
+        rank_fig=px.bar(ranking.sort_values(metric),x=metric,y="Country/Region",orientation="h",title=f"Top {len(ranking)} · {metric_label}",color_discrete_sequence=["#0b8f78"])
+        rank_fig.update_layout(template="plotly_white",height=max(360,len(ranking)*27),margin=dict(l=15,r=20,t=55,b=15),xaxis_title=metric_label,yaxis_title="",yaxis=dict(autorange="reversed"),xaxis=dict(gridcolor="#e7f0ea"))
+        st.plotly_chart(rank_fig,use_container_width=True,config={"displayModeBar":False})
+        st.caption("Source file: "+os.path.basename(country_data_path or "country_wise_latest.csv")+" · Repository snapshot; not updated live.")
 
 # PAGE 6: TREND SIMULATION
 elif page == "Trend Simulation":
