@@ -15,145 +15,79 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Simple CSS with monotonic colors
+# NEON FIELD UI — visual layer only; prediction logic remains below.
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-    
-    * {
-        font-family: 'Inter', sans-serif;
-    }
-    
-    .main-header {
-        font-size: 3rem;
-        font-weight: 700;
-        color: #2c3e50;
-        text-align: center;
-        margin-bottom: 1rem;
-        padding: 1rem 0;
-    }
-    
-    .subtitle {
-        text-align: center;
-        color: #666;
-        font-size: 1.2rem;
-        margin-bottom: 2rem;
-    }
-    
-    .metric-card {
-        background-color: #3498db;
-        padding: 1.5rem;
-        border-radius: 15px;
-        color: white;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        margin-bottom: 1rem;
-    }
-    
-    .metric-card:hover {
-        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    }
-    
-    .prediction-box {
-        background-color: #ecf0f1;
-        padding: 2rem;
-        border-radius: 15px;
-        border-left: 6px solid #e74c3c;
-        margin-top: 2rem;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .input-section {
-        background-color: #ffffff;
-        padding: 2rem;
-        border-radius: 15px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        margin-bottom: 1.5rem;
-        border: 1px solid #ddd;
-    }
-    
-    .info-card {
-        background-color: #3498db;
-        padding: 1.5rem;
-        border-radius: 10px;
-        color: white;
-        margin: 1rem 0;
-    }
-    
-    .warning-box {
-        background-color: #fff3cd;
-        border-left: 4px solid #f39c12;
-        padding: 1rem;
-        border-radius: 5px;
-        margin: 1rem 0;
-    }
-    
-    .success-box {
-        background-color: #FF59C2;
-        border-left: 4px solid #27ae60;
-        padding: 1rem;
-        border-radius: 5px;
-        margin: 1rem 0;
-    }
-    
-    .stButton button {
-        width: 100%;
-        background-color: #3498db;
-        color: white;
-        font-weight: 600;
-        font-size: 1.1rem;
-        padding: 1rem;
-        border-radius: 10px;
-        border: none;
-    }
-    
-    .stButton button:hover {
-        background-color: #2980b9;
-    }
-    
-    .feature-badge {
-        display: inline-block;
-        background-color: #3498db;
-        color: white;
-        padding: 0.3rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        margin: 0.2rem;
-    }
-    
-    .section-header {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #2c3e50;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
-        border-bottom: 3px solid #3498db;
-        padding-bottom: 0.5rem;
-    }
-    
-    .dashboard-card {
-        background-color: white;
-        padding: 1.5rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        margin-bottom: 1rem;
-    }
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+:root { --ink:#103b35; --muted:#66827b; --deep:#073b34; --mint:#19c7a2; --lime:#c7f36b; --paper:#f3f8f4; --line:#dce9e2; }
+html, body, [class*="css"] { font-family:'DM Sans',sans-serif; }
+[data-testid="stAppViewContainer"] { background:radial-gradient(circle at 82% 4%,rgba(25,199,162,.13),transparent 27rem),radial-gradient(circle at 4% 42%,rgba(199,243,107,.12),transparent 24rem),linear-gradient(135deg,#f5faf6 0%,#edf5f0 52%,#f8fbf7 100%); color:var(--ink); }
+[data-testid="stHeader"], [data-testid="stMain"] { background:transparent; }
+.block-container { max-width:1480px; padding:2.1rem 3rem 4rem; }
+[data-testid="stSidebar"] { background:linear-gradient(165deg,#073b34 0%,#0a5146 62%,#07372f 100%); border-right:1px solid rgba(255,255,255,.12); }
+[data-testid="stSidebar"] * { color:#eefbf4 !important; }
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { color:#c5e5d8 !important; }
+[data-testid="stSidebar"] hr { border-color:rgba(255,255,255,.18); }
+[data-testid="stSidebar"] [data-baseweb="select"] > div { background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.22); border-radius:12px; min-height:46px; }
+[data-testid="stSidebar"] [data-baseweb="select"] * { color:#fff !important; }
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] { color:#a9d5c6 !important; }
+.main-header { color:var(--deep); text-align:left; font-size:clamp(2.25rem,4vw,3.65rem); line-height:1.02; letter-spacing:-.055em; font-weight:800; margin:.25rem 0 .45rem; padding:0; }
+.subtitle { color:#55766e; text-align:left; font-size:1.08rem; margin:0 0 1.5rem; }
+.hero-kicker { display:inline-flex; align-items:center; gap:.55rem; color:#087a65; background:#ddf8ec; border:1px solid #b8ebd6; border-radius:999px; padding:.42rem .78rem; font:600 .72rem 'IBM Plex Mono',monospace; letter-spacing:.08em; margin-bottom:1rem; }
+.hero-kicker:before { content:''; width:7px; height:7px; border-radius:50%; background:#12b98e; box-shadow:0 0 0 4px rgba(18,185,142,.13); }
+.metric-card { position:relative; overflow:hidden; min-height:145px; background:linear-gradient(135deg,#0b5147,#087b68 75%,#0d8e75); padding:1.35rem 1.45rem; border-radius:18px; color:#f5fff9; border:1px solid rgba(255,255,255,.15); box-shadow:0 12px 28px rgba(7,59,52,.13); margin-bottom:1rem; transition:transform .25s ease,box-shadow .25s ease; }
+.metric-card:after { content:''; position:absolute; width:115px; height:115px; right:-38px; top:-42px; border:1px solid rgba(199,243,107,.4); border-radius:50%; box-shadow:0 0 0 14px rgba(199,243,107,.06),0 0 0 28px rgba(199,243,107,.035); }
+.metric-card:hover { transform:translateY(-5px); box-shadow:0 18px 34px rgba(7,59,52,.2); }
+.metric-card h4 { color:#bcebdd; font:500 .75rem 'IBM Plex Mono',monospace; letter-spacing:.08em; margin:0 0 .65rem; }
+.metric-card h2 { color:#fff; font-size:2.15rem; letter-spacing:-.04em; margin:0; }
+.metric-card p { color:#c7e8db; font-size:.82rem; margin:.25rem 0 0; }
+.dashboard-card,.input-section,.info-card,.prediction-box { border-radius:18px; padding:1.45rem; margin:.6rem 0 1rem; border:1px solid var(--line); box-shadow:0 8px 24px rgba(16,59,53,.055); }
+.dashboard-card,.input-section { background:rgba(255,255,255,.92); color:var(--ink); }
+.dashboard-card h4 { color:var(--deep); letter-spacing:-.02em; }
+.input-section { border-color:#cfe4d9; }
+.prediction-box { background:linear-gradient(135deg,#e4fbf1,#f4fff8); border:1px solid #b9ead4; border-left:5px solid var(--mint); color:var(--deep); }
+.info-card { background:linear-gradient(135deg,#0b5147,#087b68); color:white; }
+.info-card h4,.info-card p,.info-card li { color:#f1fff7; }
+.warning-box { background:#fff6df; color:#79520c; border:1px solid #f4d58c; border-left:4px solid #f1b941; padding:1rem 1.2rem; border-radius:12px; margin:1rem 0; }
+.success-box { background:#ddf8ec; color:#087454; border:1px solid #aee7ce; border-left:4px solid #19b887; padding:1rem 1.2rem; border-radius:12px; margin:1rem 0; }
+.feature-badge { display:inline-block; background:#ddf8ec; color:#087454; padding:.35rem .75rem; border:1px solid #b8ebd6; border-radius:999px; font:600 .76rem 'IBM Plex Mono',monospace; margin:.2rem; }
+.section-header { color:var(--deep); font-size:1.5rem; font-weight:800; margin:2rem 0 1rem; border-bottom:2px solid var(--mint); padding-bottom:.55rem; }
+h1,h2,h3 { color:var(--deep); letter-spacing:-.035em; }
+p,li,label,[data-testid="stMarkdownContainer"] { color:#294f47; }
+[data-testid="stMetric"] { background:#fff; border:1px solid var(--line); border-radius:15px; padding:.85rem 1rem; box-shadow:0 5px 16px rgba(16,59,53,.045); }
+[data-testid="stMetricLabel"] { color:#628077 !important; }
+[data-testid="stMetricValue"] { color:var(--deep) !important; }
+.stButton > button,[data-testid="stDownloadButton"] button { width:100%; min-height:3rem; color:#063d34 !important; background:linear-gradient(105deg,#c7f36b,#8ee7b7) !important; border:1px solid #a9df9d !important; border-radius:12px !important; font-weight:800 !important; box-shadow:0 8px 18px rgba(25,160,112,.14); transition:transform .2s ease,box-shadow .2s ease; }
+.stButton > button:hover,[data-testid="stDownloadButton"] button:hover { transform:translateY(-2px); box-shadow:0 12px 22px rgba(25,160,112,.2); }
+[data-baseweb="input"] > div,[data-baseweb="select"] > div,[data-baseweb="textarea"] > div { border-radius:11px !important; border-color:#c9ded4 !important; background:#fff !important; }
+[data-baseweb="input"] input,[data-baseweb="textarea"] textarea { color:#123e36 !important; }
+[data-testid="stFileUploader"] section { border:1.5px dashed #8bcbb0; background:#f5fcf7; border-radius:16px; }
+[data-testid="stDataFrame"],[data-testid="stTable"] { border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+[data-testid="stExpander"] { border:1px solid var(--line); border-radius:13px; background:rgba(255,255,255,.7); }
+[data-testid="stAlert"] { border-radius:13px; }
+[data-testid="stPlotlyChart"] { border:1px solid var(--line); border-radius:16px; background:rgba(255,255,255,.8); padding:.35rem; }
+hr { border-color:#d9e8df; }
+@keyframes riseIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.main-header,.subtitle,.metric-card,.dashboard-card,.input-section { animation:riseIn .55s ease both; }
+@media (max-width:900px) { .block-container { padding:1.2rem 1rem 3rem; } .main-header { font-size:2.35rem; } }
+@media (prefers-reduced-motion:reduce) { *,*:before,*:after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 </style>
 """, unsafe_allow_html=True)
 
-# Header Section
-st.markdown('<h1 class="main-header">COVID-19 Mortality Prediction System</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">A Machine Learning Platform for Healthcare Decision Support</p>', unsafe_allow_html=True)
+# Header
+st.markdown('<div class="hero-kicker">PUBLIC HEALTH INTELLIGENCE / ML WORKSPACE</div>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">COVID-19 <span style="color:#0b9c7d">Mortality Lab</span></h1>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Explore epidemiological signals, estimate mortality outcomes, and inspect model behaviour.</p>', unsafe_allow_html=True)
 
 # Model Loading
 @st.cache_resource
 def load_model():
     """Load the trained machine learning model"""
     try:
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         possible_paths = [
-            r"C:\Users\SEC\OneDrive\Desktop\covid-19-death-prediction\models\covid_death_predictor.pkl",
-            "./models/covid_death_predictor.pkl",
-            "../models/covid_death_predictor.pkl",
-            "models/covid_death_predictor.pkl"
+            os.path.join(project_root, "models", "covid_death_predictor.pkl"),
+            os.path.join(os.getcwd(), "models", "covid_death_predictor.pkl")
         ]
         
         for model_path in possible_paths:
@@ -170,7 +104,10 @@ model, model_path = load_model()
 
 # Sidebar Navigation
 with st.sidebar:
-    st.markdown("## Navigation")
+    st.markdown("## ◈ MORTALITY LAB")
+    st.caption("ANALYTICS CONSOLE  /  V1.0")
+    st.markdown("---")
+    st.markdown("### Navigate")
     page = st.selectbox(
         "Select Page:",
         [
@@ -205,36 +142,36 @@ if page == "Dashboard":
     with col1:
         st.markdown("""
         <div class="metric-card">
-            <h4>Model Accuracy</h4>
-            <h2>94.7%</h2>
-            <p>Validation Performance</p>
+            <h4>MODEL ENGINE</h4>
+            <h2>RF / REG</h2>
+            <p>Random Forest regression</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
         st.markdown("""
         <div class="metric-card">
-            <h4>Prediction Speed</h4>
-            <h2>&lt;100ms</h2>
-            <p>Average Response Time</p>
+            <h4>INPUT SIGNALS</h4>
+            <h2>04</h2>
+            <p>Epidemiology + healthcare</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col3:
         st.markdown("""
         <div class="metric-card">
-            <h4>Input Features</h4>
-            <h2>4</h2>
-            <p>Parameters Used</p>
+            <h4>WORKFLOWS</h4>
+            <h2>02</h2>
+            <p>Single + batch prediction</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col4:
         st.markdown("""
         <div class="metric-card">
-            <h4>Use Cases</h4>
-            <h2>3+</h2>
-            <p>Application Modes</p>
+            <h4>OUTPUT</h4>
+            <h2>LIVE</h2>
+            <p>Mortality estimate + risk view</p>
         </div>
         """, unsafe_allow_html=True)
     
