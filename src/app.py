@@ -702,64 +702,189 @@ elif page == "Country Comparison":
 
 # PAGE 6: TREND SIMULATION
 elif page == "Trend Simulation":
-    st.markdown("## Predictive Trend Simulation")
-    
-    st.info("""
-    **Project future COVID-19 trends** based on current data and adjustable parameters.
-    Simulate different scenarios to understand potential outcomes.
-    """)
-    
-    st.warning("**Coming Soon!** This feature requires time-series forecasting models.")
-    
-    st.markdown("### Planned Features:")
     st.markdown("""
-    - 7-30 day projections
-    - Adjustable growth rate sliders
-    - Multiple scenario comparisons
-    - Early warning indicators
-    - Confidence interval bands
-    """)
-    
-    # Demo simulation
-    st.markdown("### Demo Simulation")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        days_ahead = st.slider("Forecast Days Ahead", 7, 30, 14)
-        growth_rate = st.slider("Daily Growth Rate (%)", 0.0, 10.0, 2.5, 0.5)
-    
-    with col2:
-        current_cases = st.number_input("Current Active Cases", 1000, 100000, 5000, 500)
-        intervention = st.selectbox("Intervention Level", ["None", "Moderate", "Strong"])
-    
-    # Generate demo projection
-    if st.button("Generate Projection", use_container_width=True):
-        dates = [datetime.now() + timedelta(days=i) for i in range(days_ahead)]
-        
-        # Simple exponential growth simulation
-        intervention_factor = {"None": 1.0, "Moderate": 0.7, "Strong": 0.4}[intervention]
-        adjusted_growth = growth_rate * intervention_factor / 100
-        
-        projected_cases = [current_cases * (1 + adjusted_growth) ** i for i in range(days_ahead)]
-        
-        # Create projection chart
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=dates,
-            y=projected_cases,
-            mode='lines+markers',
-            name='Projected Cases',
-            line=dict(color='#e74c3c', width=3)
-        ))
-        fig.update_layout(
-            title=f"COVID-19 Case Projection - {days_ahead} Days ({intervention} Intervention)",
-            xaxis_title="Date",
-            yaxis_title="Active Cases",
-            height=400
-        )
-        st.plotly_chart(fig, use_container_width=True)
-        
-        st.success(f"By day {days_ahead}, projected cases: **{int(projected_cases[-1]):,}**")
+    <div class="trend-hero">
+      <div class="trend-kicker">SCENARIO PLANNER · WHAT-IF ANALYSIS</div>
+      <h1>Explore possible <span>case trajectories.</span></h1>
+      <p>Adjust the starting point and daily change rate to compare illustrative scenarios. This is a simple mathematical simulation — not a trained forecasting model.</p>
+      <div class="trend-tags"><span>INTERACTIVE</span><span>SCENARIO COMPARISON</span><span>NOT A CLINICAL FORECAST</span></div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    .trend-hero { position:relative; overflow:hidden; padding:2rem 2.1rem; margin:.35rem 0 1.3rem; border-radius:21px; background:linear-gradient(115deg,#073b34,#0b6657 66%,#0b8c73); box-shadow:0 14px 32px rgba(7,59,52,.13); }
+    .trend-hero:after { content:''; position:absolute; width:240px; height:240px; right:-75px; top:-125px; border:1px solid rgba(199,243,107,.4); border-radius:50%; box-shadow:0 0 0 22px rgba(199,243,107,.06),0 0 0 46px rgba(199,243,107,.035); }
+    .trend-kicker { color:#c7f36b; font:600 .7rem 'IBM Plex Mono',monospace; letter-spacing:.12em; margin-bottom:1rem; }
+    .trend-hero h1 { color:#fff; font-size:clamp(2rem,4vw,3rem); line-height:1.05; letter-spacing:-.05em; margin:0 0 .7rem; }
+    .trend-hero h1 span { color:#c7f36b; }
+    .trend-hero p { color:#d2eee3; max-width:760px; font-size:1rem; line-height:1.65; margin:0 0 1.1rem; }
+    .trend-tags { display:flex; flex-wrap:wrap; gap:.45rem; position:relative; z-index:1; }
+    .trend-tags span { color:#effff6; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25); padding:.35rem .65rem; border-radius:999px; font:500 .64rem 'IBM Plex Mono',monospace; }
+    .trend-panel { background:#fff; border:1px solid #dce9e2; border-radius:17px; padding:1.15rem 1.25rem; margin:.4rem 0 1rem; }
+    .trend-note { padding:1rem 1.15rem; border:1px solid #f1d99e; border-left:4px solid #e5b34e; background:#fff8e8; color:#79520c; border-radius:13px; line-height:1.6; margin:.8rem 0 1rem; }
+    .trend-note strong { color:#684608; }
+    .trend-kpi { background:#fff; border:1px solid #dce9e2; border-radius:15px; padding:1rem 1.1rem; height:100%; }
+    .trend-kpi span { color:#66827b; font:600 .68rem 'IBM Plex Mono',monospace; letter-spacing:.06em; }
+    .trend-kpi strong { display:block; color:#073b34; font-size:1.65rem; letter-spacing:-.04em; margin-top:.35rem; }
+    .trend-kpi small { color:#66827b; font-size:.78rem; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown("### Configure your scenario")
+    st.caption("Use a starting active-case count and an assumed daily percentage change.")
+    control_col, preview_col = st.columns([1.05, .95], gap="large")
+    with control_col:
+        with st.container(border=True):
+            current_cases = st.number_input(
+                "Current active cases",
+                min_value=0,
+                max_value=1000000000,
+                value=5000,
+                step=500,
+                help="Starting case count for this illustrative scenario."
+            )
+            daily_change = st.slider(
+                "Assumed daily change (%)",
+                min_value=-10.0,
+                max_value=15.0,
+                value=2.5,
+                step=0.5,
+                help="Positive values increase the simulated count; negative values decrease it."
+            )
+            days_ahead = st.slider(
+                "Simulation period",
+                min_value=7,
+                max_value=30,
+                value=14,
+                step=1,
+                help="Number of days to simulate."
+            )
+            st.markdown("**Scenario assumptions**")
+            mild_reduction = st.slider(
+                "Moderate scenario: growth-rate reduction (%)",
+                min_value=0,
+                max_value=90,
+                value=25,
+                step=5
+            )
+            strong_reduction = st.slider(
+                "Stronger scenario: growth-rate reduction (%)",
+                min_value=0,
+                max_value=100,
+                value=50,
+                step=5
+            )
+            run_simulation = st.button("Run scenario comparison  →", use_container_width=True, type="primary")
+    with preview_col:
+        st.markdown("""
+        <div class="trend-panel">
+          <div class="trend-kicker">HOW TO READ THIS TOOL</div>
+          <h3 style="color:#073b34;margin:.2rem 0 .6rem">Three possible paths</h3>
+          <p style="color:#55766e;line-height:1.6">The baseline keeps the assumed daily change unchanged. The moderate and stronger scenarios reduce that assumed rate by the percentages you choose.</p>
+          <hr style="border-color:#e5eee8">
+          <p style="color:#55766e;font-size:.88rem"><strong style="color:#103b35">Baseline</strong> · No change to the assumed rate</p>
+          <p style="color:#55766e;font-size:.88rem"><strong style="color:#103b35">Moderate</strong> · Your selected reduction</p>
+          <p style="color:#55766e;font-size:.88rem"><strong style="color:#103b35">Stronger</strong> · Your selected reduction</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    if mild_reduction > strong_reduction:
+        st.warning("Your moderate scenario currently has a larger growth-rate reduction than the stronger scenario. Adjust the sliders if you want the stronger scenario to show a greater reduction.")
+
+    st.markdown("""
+    <div class="trend-note"><strong>Interpretation notice:</strong> The scenario reductions are user-defined assumptions, not measured intervention effects. The simulation uses compound daily growth and does not account for changing behaviour, demographics, reporting delays, immunity, variants, healthcare capacity or uncertainty.</div>
+    """, unsafe_allow_html=True)
+
+    if run_simulation:
+        if current_cases < 0:
+            st.error("Starting active cases cannot be negative.")
+        else:
+            scenario_specs = [
+                ("Baseline", 0, "#0b8f78"),
+                ("Moderate", mild_reduction, "#e0a12b"),
+                ("Stronger", strong_reduction, "#398fce")
+            ]
+            day_numbers = np.arange(days_ahead + 1)
+            start_date = datetime.now().date()
+            dates = [start_date + timedelta(days=int(day)) for day in day_numbers]
+            fig = go.Figure()
+            final_values = {}
+            for scenario_name, reduction, line_color in scenario_specs:
+                scenario_rate = (daily_change / 100.0) * (1 - reduction / 100.0)
+                values = [float(current_cases) * ((1 + scenario_rate) ** int(day)) for day in day_numbers]
+                values = [max(0.0, value) for value in values]
+                final_values[scenario_name] = values[-1]
+                fig.add_trace(go.Scatter(
+                    x=dates,
+                    y=values,
+                    mode="lines",
+                    name=f"{scenario_name} · {reduction}% reduction",
+                    line=dict(color=line_color, width=3),
+                    hovertemplate="%{x|%d %b %Y}<br>Simulated active cases: %{y:,.0f}<extra></extra>"
+                ))
+            fig.add_vline(x=dates[0], line_dash="dot", line_color="#9ab5a8")
+            fig.update_layout(
+                template="plotly_white",
+                title=dict(text=f"Illustrative active-case scenarios · {days_ahead} days", font=dict(size=18, color="#103b35")),
+                xaxis_title="Simulation date",
+                yaxis_title="Simulated active cases",
+                hovermode="x unified",
+                height=440,
+                margin=dict(l=20, r=20, t=65, b=25),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="#ffffff",
+                font=dict(color="#31584f")
+            )
+            fig.update_xaxes(showgrid=False)
+            fig.update_yaxes(gridcolor="#e7f0ea", rangemode="tozero", tickformat=",")
+            st.markdown("### Scenario results")
+            st.caption("Starting value is day zero. Each line uses the same starting count.")
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False, "responsive": True})
+
+            k1, k2, k3 = st.columns(3)
+            for col, (scenario_name, reduction, line_color) in zip([k1, k2, k3], scenario_specs):
+                with col:
+                    change = final_values[scenario_name] - float(current_cases)
+                    pct = (change / float(current_cases) * 100) if current_cases else 0
+                    col.metric(
+                        f"{scenario_name} · day {days_ahead}",
+                        f"{final_values[scenario_name]:,.0f}",
+                        f"{pct:+.1f}% from start"
+                    )
+            result_table = pd.DataFrame([
+                {"Scenario": name, "Growth-rate reduction": f"{reduction}%", f"Simulated cases · day {days_ahead}": round(final_values[name])}
+                for name, reduction, _ in scenario_specs
+            ])
+            st.markdown("### Compare outcomes")
+            st.dataframe(result_table, use_container_width=True, hide_index=True)
+            if current_cases == 0:
+                st.info("The starting count is zero, so all three simulated paths remain at zero under this proportional-growth calculation.")
+            st.download_button(
+                "Download scenario data (CSV)",
+                data=pd.DataFrame({
+                    "Date": dates,
+                    "Day": day_numbers,
+                    **{
+                        f"{name} ({reduction}% rate reduction)": [
+                            float(current_cases) * ((1 + (daily_change / 100.0) * (1 - reduction / 100.0)) ** int(day))
+                            for day in day_numbers
+                        ]
+                        for name, reduction, _ in scenario_specs
+                    }
+                }).to_csv(index=False).encode("utf-8"),
+                file_name="covid_trend_scenarios.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+    else:
+        st.markdown("""
+        <div class="trend-panel">
+          <div class="trend-kicker">READY WHEN YOU ARE</div>
+          <h3 style="color:#073b34;margin:.2rem 0 .5rem">Your scenario comparison will appear here</h3>
+          <p style="color:#55766e;line-height:1.6;margin:0">Set your assumptions on the left, then select <strong>Run scenario comparison</strong> to generate the chart, end-of-period comparisons and a downloadable CSV.</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 # PAGE 7: ABOUT & METHODOLOGY
 elif page == "About & Methodology":
