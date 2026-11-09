@@ -51,6 +51,46 @@ html, body, [class*="css"] { font-family:'DM Sans',sans-serif; }
 }
 [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label p { color:#f3fff8 !important; font-weight:600; }
 [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label > div:first-child { display:none; }
+/* Turn Streamlit radio controls into a clean, accessible menu */
+[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label {
+    position:relative; margin:0 !important; padding:.62rem .8rem .62rem 1rem !important;
+    min-height:42px; border-radius:10px; gap:0;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label [role="radio"] {
+    position:absolute !important; width:1px !important; height:1px !important;
+    padding:0 !important; margin:-1px !important; overflow:hidden !important;
+    clip:rect(0,0,0,0) !important; white-space:nowrap !important; border:0 !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label:has(input:checked) {
+    background:linear-gradient(90deg,rgba(25,199,162,.25),rgba(25,199,162,.10));
+    border-left:3px solid #c7f36b; padding-left:calc(.8rem - 2px) !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label p {
+    font-size:.94rem !important; line-height:1.25; margin:0 !important;
+}
+[data-testid="stSidebar"] .success-box {
+    color:#075b45 !important; background:#d9f8e9 !important;
+    border-color:#9cdec0 !important; border-left-color:#19b887 !important;
+}
+[data-testid="stSidebar"] .success-box * { color:#075b45 !important; }
+[data-testid="stSidebar"] .warning-box {
+    color:#79520c !important; background:#fff1cc !important;
+}
+[data-testid="stSidebar"] .warning-box * { color:#79520c !important; }
+[data-testid="stSidebar"] { min-width:270px !important; max-width:270px !important; }
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] { padding-top:1.1rem; }
+[data-testid="stSidebar"] hr { margin:.9rem 0 1.1rem; }
+.block-container { padding-top:1.45rem; }
+.dashboard-card { padding:1.15rem 1.25rem; margin:.35rem 0 .7rem; }
+.dashboard-card h3 { margin:.55rem 0 .45rem; font-size:1.35rem; }
+.dashboard-card p { line-height:1.5; margin-bottom:.35rem; }
+[data-testid="stMetric"] { padding:.7rem .9rem; }
+[data-testid="stMetricValue"] { font-size:1.8rem !important; }
+@media (max-width:900px) {
+    [data-testid="stSidebar"] { min-width:unset !important; max-width:unset !important; }
+    .block-container { padding:1rem .9rem 2.5rem; }
+}
+
 [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label:focus-within { outline:2px solid #c7f36b; outline-offset:2px; }
 
 .main-header { color:var(--deep); text-align:left; font-size:clamp(2.25rem,4vw,3.65rem); line-height:1.02; letter-spacing:-.055em; font-weight:800; margin:.25rem 0 .45rem; padding:0; }
