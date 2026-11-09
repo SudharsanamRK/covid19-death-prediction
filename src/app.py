@@ -20,7 +20,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# NEON FIELD UI — visual layer only; prediction logic remains below.
+# Visual styling only; prediction logic remains below.
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
@@ -77,16 +77,18 @@ html, body, [class*="css"] { font-family:'DM Sans',sans-serif; }
     color:#79520c !important; background:#fff1cc !important;
 }
 [data-testid="stSidebar"] .warning-box * { color:#79520c !important; }
-/* Keep the native collapse control usable. A fixed min-width on a collapsed sidebar can cover the main canvas. */
-[data-testid="stSidebar"][aria-expanded="true"] { width:270px !important; min-width:270px !important; max-width:270px !important; }
-[data-testid="stSidebar"][aria-expanded="false"] { width:0 !important; min-width:0 !important; max-width:0 !important; }
+/* Sidebar sizing: collapse fully without leaving an empty rail, while keeping the reopen control on screen. */
+[data-testid="stSidebar"] { flex-shrink:0 !important; transition:width .24s ease, min-width .24s ease, flex-basis .24s ease; }
+[data-testid="stSidebar"][aria-expanded="true"] { width:280px !important; min-width:280px !important; max-width:280px !important; flex-basis:280px !important; }
+[data-testid="stSidebar"][aria-expanded="false"] { width:0 !important; min-width:0 !important; max-width:0 !important; flex-basis:0 !important; margin:0 !important; padding:0 !important; overflow:visible !important; }
+[data-testid="stSidebar"][aria-expanded="false"] [data-testid="stSidebarContent"] { visibility:hidden !important; }
 [data-testid="stSidebar"] [data-testid="stSidebarContent"] { padding-top:1.1rem; }
-[data-testid="stSidebarCollapsedControl"] { display:flex !important; visibility:visible !important; opacity:1 !important; z-index:1000000 !important; }
-[data-testid="stSidebarCollapsedControl"] button { display:flex !important; visibility:visible !important; opacity:1 !important; background:#073b34 !important; color:#fff !important; border:1px solid rgba(255,255,255,.25) !important; border-radius:0 12px 12px 0 !important; box-shadow:0 4px 16px rgba(7,59,52,.22) !important; }
+[data-testid="stSidebarCollapsedControl"] { position:fixed !important; left:0 !important; top:1rem !important; display:flex !important; visibility:visible !important; opacity:1 !important; z-index:1000000 !important; }
+[data-testid="stSidebarCollapsedControl"] button { display:flex !important; visibility:visible !important; opacity:1 !important; min-width:42px !important; min-height:44px !important; background:#073b34 !important; color:#fff !important; border:1px solid rgba(255,255,255,.25) !important; border-radius:0 12px 12px 0 !important; box-shadow:0 4px 16px rgba(7,59,52,.22) !important; }
 [data-testid="stSidebarCollapsedControl"] button svg { fill:#fff !important; color:#fff !important; }
 @media (max-width:900px) {
-  [data-testid="stSidebar"][aria-expanded="true"] { width:min(86vw,300px) !important; min-width:min(86vw,300px) !important; max-width:min(86vw,300px) !important; }
-  [data-testid="stSidebar"][aria-expanded="false"] { width:0 !important; min-width:0 !important; max-width:0 !important; }
+  [data-testid="stSidebar"][aria-expanded="true"] { width:min(86vw,300px) !important; min-width:min(86vw,300px) !important; max-width:min(86vw,300px) !important; flex-basis:min(86vw,300px) !important; }
+  [data-testid="stSidebar"][aria-expanded="false"] { width:0 !important; min-width:0 !important; max-width:0 !important; flex-basis:0 !important; }
 }
 [data-testid="stSidebar"] hr { margin:.9rem 0 1.1rem; }
 .block-container { padding-top:1.45rem; }
@@ -295,7 +297,7 @@ if page == "Dashboard":
     st.markdown('<div class="dash-section">Explore the data</div>',unsafe_allow_html=True)
     e1,e2,e3=st.columns(3,gap="medium")
     with e1:
-        st.markdown('<div class="dash-step"><div class="num">TOOL 01</div><h3>Model insights</h3><p>See which input variables influence the fitted forest model and understand its evaluation limits.</p></div>',unsafe_allow_html=True)
+        st.markdown('<div class="dash-step"><div class="num">TOOL 01</div><h3>Model insights</h3><p>See how the fitted forest model uses its input variables and understand its evaluation limits.</p></div>',unsafe_allow_html=True)
         if st.button("Explore model  →",key="go_insights",use_container_width=True):
             st.session_state["page_navigation"]="Model Insights"
             st.rerun()
@@ -314,9 +316,9 @@ if page == "Dashboard":
     st.markdown("""
     <div class="dash-explain">
       <h3>The prediction process</h3>
-      <p>The application uses a previously trained Random Forest regression model. You provide four numeric indicators. The model compares the input pattern with relationships learned during training and returns an estimated death count.</p>
+      <p>The application uses a previously trained Random Forest regression model. You provide four numeric indicators. The model uses patterns learned during training to return an estimated death count.</p>
       <div class="dash-flow"><span>01 · Enter indicators</span><b>→</b><span>02 · Validate inputs</span><b>→</b><span>03 · Run model</span><b>→</b><span>04 · Review estimate</span></div>
-      <p>The single workflow handles one record. The batch workflow applies the same model to each valid row in an uploaded CSV.</p>
+      <p>Single Prediction handles one record. Batch Prediction applies the same model to each valid row in an uploaded CSV.</p>
     </div>
     """,unsafe_allow_html=True)
     st.markdown('<div class="dash-section">What do the four inputs mean?</div>',unsafe_allow_html=True)
@@ -716,7 +718,7 @@ elif page == "Trend Simulation":
     <div class="trend-hero">
       <div class="trend-kicker">SCENARIO PLANNER · WHAT-IF ANALYSIS</div>
       <h1>Explore possible <span>case trajectories.</span></h1>
-      <p>Adjust the starting point and daily change rate to compare illustrative scenarios. This is a simple mathematical simulation — not a trained forecasting model.</p>
+      <p>Adjust the starting point and daily change rate to compare illustrative scenarios. This is a simple mathematical simulation , not a trained forecasting model.</p>
       <div class="trend-tags"><span>INTERACTIVE</span><span>SCENARIO COMPARISON</span><span>NOT A CLINICAL FORECAST</span></div>
     </div>
     """, unsafe_allow_html=True)
@@ -902,7 +904,7 @@ elif page == "About & Methodology":
     <div class="about-hero">
         <div class="about-eyebrow">PROJECT DOCUMENTATION · MODEL TRANSPARENCY</div>
         <h1>Behind the <span>prediction.</span></h1>
-        <p>A clear guide to what this system does, how its machine-learning model works, and where its predictions should — and should not — be used.</p>
+        <p>A clear guide to what this system does, how its machine-learning model works, and where its predictions should , and should not , be used.</p>
         <div class="about-tags"><span>RANDOM FOREST REGRESSION</span><span>SCIKIT-LEARN</span><span>STREAMLIT</span></div>
     </div>
     """, unsafe_allow_html=True)
@@ -950,7 +952,7 @@ elif page == "About & Methodology":
     <div class="about-note"><strong>Important distinction</strong><br>
     This is a research and educational prediction project. It does not connect to a live
     epidemiological feed, and its output is an estimate from a model trained on historical
-    data — not a current official death count or a clinical assessment.</div>
+    data , not a current official death count or a clinical assessment.</div>
     """, unsafe_allow_html=True)
 
     st.markdown('<div class="about-section-kicker">02 / MODEL INPUTS</div>', unsafe_allow_html=True)
