@@ -169,6 +169,17 @@ def load_model():
 
 model, model_path = load_model()
 
+# Load the repository's static country-wise snapshot for the comparison page
+@st.cache_data
+def load_country_dataset():
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    data_path = os.path.join(project_root, "data", "country_wise_latest.csv")
+    if os.path.exists(data_path):
+        return pd.read_csv(data_path), data_path
+    return None, None
+
+country_data, country_data_path = load_country_dataset()
+
 # Sidebar Navigation
 PAGES = [
     "Dashboard",
@@ -426,17 +437,6 @@ elif page == "Single Prediction":
                 st.error("Invalid: Active cases cannot exceed confirmed cases.")
     else:
         st.error("Model not available.")
-
-# Repository data used by the country explorer
-@st.cache_data
-def load_country_dataset():
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    path = os.path.join(root, "data", "country_wise_latest.csv")
-    if os.path.exists(path):
-        return pd.read_csv(path), path
-    return None, None
-
-country_data, country_data_path = load_country_dataset()
 
 # PAGE 3: BATCH PREDICTION (CSV)
 elif page == "Batch Prediction (CSV)":
