@@ -6,6 +6,11 @@ import os
 from datetime import datetime, timedelta
 import plotly.graph_objects as go
 import plotly.express as px
+import plotly.io as pio
+
+# Keep every Plotly visualization on a readable light canvas
+pio.templates.default = "plotly_white"
+px.defaults.template = "plotly_white"
 
 # Page configuration
 st.set_page_config(
@@ -31,6 +36,23 @@ html, body, [class*="css"] { font-family:'DM Sans',sans-serif; }
 [data-testid="stSidebar"] [data-baseweb="select"] > div { background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.22); border-radius:12px; min-height:46px; }
 [data-testid="stSidebar"] [data-baseweb="select"] * { color:#fff !important; }
 [data-testid="stSidebar"] [data-testid="stCaptionContainer"] { color:#a9d5c6 !important; }
+[data-testid="stSidebar"] [data-testid="stRadio"] > label { display:none; }
+[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] { gap:.35rem; }
+[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label {
+    display:flex; align-items:center; min-height:43px; padding:.45rem .75rem;
+    border:1px solid transparent; border-radius:11px; cursor:pointer;
+    background:rgba(255,255,255,.035); transition:background .18s ease,border-color .18s ease;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label:hover {
+    background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.15);
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label:has(input:checked) {
+    background:rgba(25,199,162,.2); border-color:rgba(115,235,197,.4);
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label p { color:#f3fff8 !important; font-weight:600; }
+[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label > div:first-child { display:none; }
+[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label:focus-within { outline:2px solid #c7f36b; outline-offset:2px; }
+
 .main-header { color:var(--deep); text-align:left; font-size:clamp(2.25rem,4vw,3.65rem); line-height:1.02; letter-spacing:-.055em; font-weight:800; margin:.25rem 0 .45rem; padding:0; }
 .subtitle { color:#55766e; text-align:left; font-size:1.08rem; margin:0 0 1.5rem; }
 .hero-kicker { display:inline-flex; align-items:center; gap:.55rem; color:#087a65; background:#ddf8ec; border:1px solid #b8ebd6; border-radius:999px; padding:.42rem .78rem; font:600 .72rem 'IBM Plex Mono',monospace; letter-spacing:.08em; margin-bottom:1rem; }
@@ -60,6 +82,11 @@ p,li,label,[data-testid="stMarkdownContainer"] { color:#294f47; }
 .stButton > button,[data-testid="stDownloadButton"] button { width:100%; min-height:3rem; color:#063d34 !important; background:linear-gradient(105deg,#c7f36b,#8ee7b7) !important; border:1px solid #a9df9d !important; border-radius:12px !important; font-weight:800 !important; box-shadow:0 8px 18px rgba(25,160,112,.14); transition:transform .2s ease,box-shadow .2s ease; }
 .stButton > button:hover,[data-testid="stDownloadButton"] button:hover { transform:translateY(-2px); box-shadow:0 12px 22px rgba(25,160,112,.2); }
 [data-baseweb="input"] > div,[data-baseweb="select"] > div,[data-baseweb="textarea"] > div { border-radius:11px !important; border-color:#c9ded4 !important; background:#fff !important; }
+[data-testid="stNumberInput"] button { background:#edf7f1 !important; color:#0b5147 !important; border-color:#c9ded4 !important; }
+[data-testid="stNumberInput"] input { background:#fff !important; color:#123e36 !important; font-size:1rem !important; }
+[data-testid="stNumberInput"] [data-baseweb="input"] { background:#fff !important; }
+[data-testid="stPlotlyChart"] iframe { background:#fff !important; }
+
 [data-baseweb="input"] input,[data-baseweb="textarea"] textarea { color:#123e36 !important; }
 [data-testid="stFileUploader"] section { border:1.5px dashed #8bcbb0; background:#f5fcf7; border-radius:16px; }
 [data-testid="stDataFrame"],[data-testid="stTable"] { border:1px solid var(--line); border-radius:14px; overflow:hidden; }
@@ -103,24 +130,28 @@ def load_model():
 model, model_path = load_model()
 
 # Sidebar Navigation
+PAGES = [
+    "Dashboard",
+    "Single Prediction",
+    "Batch Prediction (CSV)",
+    "Model Insights",
+    "Country Comparison",
+    "Trend Simulation",
+    "About & Methodology"
+]
+
 with st.sidebar:
     st.markdown("## ◈ MORTALITY LAB")
     st.caption("ANALYTICS CONSOLE  /  V1.0")
     st.markdown("---")
-    st.markdown("### Navigate")
-    page = st.selectbox(
-        "Select Page:",
-        [
-            "Dashboard", 
-            "Single Prediction", 
-            "Batch Prediction (CSV)", 
-            "Model Insights",
-            "Country Comparison",
-            "Trend Simulation",
-            "About & Methodology"
-        ]
+    st.markdown("### Workspace")
+    page = st.radio(
+        "Navigation",
+        PAGES,
+        label_visibility="collapsed",
+        key="page_navigation"
     )
-    
+
     st.markdown("---")
     st.markdown("### System Status")
     if model is not None:
@@ -128,137 +159,75 @@ with st.sidebar:
         st.caption(f"{os.path.basename(model_path)}")
     else:
         st.markdown('<div class="warning-box">Model Not Available</div>', unsafe_allow_html=True)
-    
+
     st.markdown("---")
-    st.markdown(f"**Last Updated:** {datetime.now().strftime('%B %Y')}")
+    st.caption(f"Last updated · {datetime.now().strftime('%B %Y')}")
 
 # PAGE 1: DASHBOARD
 if page == "Dashboard":
-    st.markdown("## System Dashboard")
-    
-    # Key Metrics Row
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.markdown("""
-        <div class="metric-card">
-            <h4>MODEL ENGINE</h4>
-            <h2>RF / REG</h2>
-            <p>Random Forest regression</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div class="metric-card">
-            <h4>INPUT SIGNALS</h4>
-            <h2>04</h2>
-            <p>Epidemiology + healthcare</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown("""
-        <div class="metric-card">
-            <h4>WORKFLOWS</h4>
-            <h2>02</h2>
-            <p>Single + batch prediction</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col4:
-        st.markdown("""
-        <div class="metric-card">
-            <h4>OUTPUT</h4>
-            <h2>LIVE</h2>
-            <p>Mortality estimate + risk view</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
-    # Quick Stats
-    st.markdown("### Quick Overview")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
+    st.markdown("## Your workspace")
+    st.markdown("Start a prediction or explore the model. Your tools are one click away.")
+
+    # Compact, factual overview
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Prediction workflows", "02")
+    m2.metric("Input variables", "04")
+    m3.metric("Analysis sections", "03")
+    m4.metric("Model status", "Ready" if model is not None else "Unavailable")
+
+    st.markdown("### Quick actions")
+    a1, a2 = st.columns(2)
+    with a1:
         st.markdown("""
         <div class="dashboard-card">
-            <h4>Key Features</h4>
-            <ul>
-                <li><b>Single Prediction</b> - Quick mortality estimates</li>
-                <li><b>Batch Processing</b> - Upload CSV for bulk predictions</li>
-                <li><b>Model Transparency</b> - Feature importance insights</li>
-                <li><b>Country Comparison</b> - Multi-region analysis</li>
-                <li><b>Trend Simulation</b> - Future projections</li>
-            </ul>
+            <div class="feature-badge">01 / INSTANT ESTIMATE</div>
+            <h3>Single prediction</h3>
+            <p>Enter four health-system indicators and generate a mortality estimate.</p>
         </div>
         """, unsafe_allow_html=True)
-    
-    with col2:
+        if st.button("Open single prediction  →", key="go_single", use_container_width=True):
+            st.session_state["page_navigation"] = "Single Prediction"
+            st.rerun()
+    with a2:
         st.markdown("""
         <div class="dashboard-card">
-            <h4>System Capabilities</h4>
-            <ul>
-                <li>Real-time predictions</li>
-                <li>Data visualization & export</li>
-                <li>Risk level assessment</li>
-                <li>Interactive dashboards</li>
-                <li>Healthcare decision support</li>
-            </ul>
+            <div class="feature-badge">02 / BULK ANALYSIS</div>
+            <h3>Batch prediction</h3>
+            <p>Upload a CSV dataset to process multiple records in one workflow.</p>
         </div>
         """, unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
-    # Model Information
-    st.markdown("### Model Information")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.info("""
-        **Input Parameters**
-        - Total Confirmed Cases
-        - Active Cases
-        - New Cases (24h)
-        - Hospital Beds per 1000
-        """)
-    
-    with col2:
-        st.success("""
-        **Output Metrics**
-        - Predicted Deaths
-        - Mortality Rate
-        - Risk Level Assessment
-        - Confidence Intervals
-        """)
-    
-    with col3:
-        st.warning("""
-        **Model Type**
-        - Algorithm: ML Regression
-        - Training: Historical Data
-        - Updates: Quarterly
-        - Validation: Cross-validated
-        """)
-    
-    st.markdown("---")
-    
-    # Getting Started
-    st.markdown("### Getting Started")
-    st.info("""
-    **Choose your workflow:**
-    
-    **Single Prediction** - For quick one-time estimates  
-    **Batch Prediction** - Upload CSV file with multiple entries  
-    **Model Insights** - Understand how the model makes decisions  
-    **Country Comparison** - Compare metrics across regions  
-    **Trend Simulation** - Project future scenarios
-    
-    Use the navigation menu on the left to get started!
-    """)
+        if st.button("Open batch prediction  →", key="go_batch", use_container_width=True):
+            st.session_state["page_navigation"] = "Batch Prediction (CSV)"
+            st.rerun()
+
+    st.markdown("### Explore the model")
+    e1, e2, e3 = st.columns(3)
+    with e1:
+        st.markdown('<div class="dashboard-card"><h4>Model insights</h4><p>Inspect feature importance and model behaviour.</p></div>', unsafe_allow_html=True)
+        if st.button("View insights", key="go_insights", use_container_width=True):
+            st.session_state["page_navigation"] = "Model Insights"
+            st.rerun()
+    with e2:
+        st.markdown('<div class="dashboard-card"><h4>Country comparison</h4><p>Compare epidemiological indicators across countries.</p></div>', unsafe_allow_html=True)
+        if st.button("Compare countries", key="go_countries", use_container_width=True):
+            st.session_state["page_navigation"] = "Country Comparison"
+            st.rerun()
+    with e3:
+        st.markdown('<div class="dashboard-card"><h4>Trend simulation</h4><p>Explore possible future case trajectories.</p></div>', unsafe_allow_html=True)
+        if st.button("Run simulation", key="go_trends", use_container_width=True):
+            st.session_state["page_navigation"] = "Trend Simulation"
+            st.rerun()
+
+    st.markdown("### Prediction inputs")
+    st.markdown("""
+    <div class="dashboard-card">
+      <p>Both prediction workflows use the same four input signals:</p>
+      <span class="feature-badge">Confirmed cases</span>
+      <span class="feature-badge">Active cases</span>
+      <span class="feature-badge">New cases · 24h</span>
+      <span class="feature-badge">Hospital beds / 1,000</span>
+    </div>
+    """, unsafe_allow_html=True)
 
 # PAGE 2: SINGLE PREDICTION
 elif page == "Single Prediction":
