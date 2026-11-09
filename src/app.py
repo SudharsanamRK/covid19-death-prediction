@@ -763,291 +763,170 @@ elif page == "Trend Simulation":
 
 # PAGE 7: ABOUT & METHODOLOGY
 elif page == "About & Methodology":
-    st.markdown("## About This System")
-    
     st.markdown("""
-    The **COVID-19 Mortality Prediction System** is an advanced analytical tool that leverages 
-    machine learning algorithms to provide evidence-based predictions of COVID-19 mortality rates. 
-    The system processes real-time epidemiological data and healthcare infrastructure metrics to 
-    generate actionable insights for healthcare professionals and policymakers.
+    <div class="about-hero">
+        <div class="about-eyebrow">PROJECT DOCUMENTATION · MODEL TRANSPARENCY</div>
+        <h1>Behind the <span>prediction.</span></h1>
+        <p>A clear guide to what this system does, how its machine-learning model works, and where its predictions should — and should not — be used.</p>
+        <div class="about-tags"><span>RANDOM FOREST REGRESSION</span><span>SCIKIT-LEARN</span><span>STREAMLIT</span></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <style>
+    .about-hero { position:relative; overflow:hidden; padding:2.1rem 2.2rem; margin:.4rem 0 1.6rem; border-radius:22px; color:#f3fff8; background:linear-gradient(115deg,#073b34 0%,#0b6657 65%,#0b8c73 100%); box-shadow:0 16px 36px rgba(7,59,52,.14); }
+    .about-hero:after { content:''; position:absolute; width:260px; height:260px; border:1px solid rgba(199,243,107,.35); border-radius:50%; right:-75px; top:-125px; box-shadow:0 0 0 22px rgba(199,243,107,.055),0 0 0 48px rgba(199,243,107,.035); }
+    .about-eyebrow { color:#c7f36b; font:600 .7rem 'IBM Plex Mono',monospace; letter-spacing:.12em; margin-bottom:1.1rem; }
+    .about-hero h1 { color:#fff; font-size:clamp(2rem,4vw,3.1rem); letter-spacing:-.055em; line-height:1.04; margin:0 0 .8rem; }
+    .about-hero h1 span { color:#c7f36b; }
+    .about-hero p { color:#d2eee3; max-width:760px; font-size:1.02rem; line-height:1.7; margin:0 0 1.25rem; }
+    .about-tags { display:flex; flex-wrap:wrap; gap:.5rem; position:relative; z-index:1; }
+    .about-tags span { color:#eafff4; border:1px solid rgba(220,255,238,.28); background:rgba(255,255,255,.08); border-radius:999px; padding:.38rem .7rem; font:500 .65rem 'IBM Plex Mono',monospace; letter-spacing:.05em; }
+    .about-section-kicker { color:#0b9476; font:600 .7rem 'IBM Plex Mono',monospace; letter-spacing:.12em; margin:1.5rem 0 .35rem; }
+    .about-feature { height:100%; background:#fff; border:1px solid #dce9e2; border-radius:16px; padding:1.1rem 1.15rem; box-shadow:0 6px 20px rgba(16,59,53,.045); }
+    .about-feature .num { color:#0b9c7d; font:600 .72rem 'IBM Plex Mono',monospace; margin-bottom:.7rem; }
+    .about-feature h3 { font-size:1.02rem; margin:0 0 .45rem; color:#073b34; }
+    .about-feature p { font-size:.88rem; line-height:1.55; color:#55766e; margin:0; }
+    .about-panel { background:#fff; border:1px solid #dce9e2; border-radius:17px; padding:1.25rem 1.35rem; margin:.5rem 0 1rem; }
+    .about-panel h3 { margin:.1rem 0 .6rem; font-size:1.08rem; }
+    .about-panel p,.about-panel li { color:#55766e; line-height:1.65; font-size:.91rem; }
+    .about-step { display:flex; gap:.9rem; align-items:flex-start; padding:.8rem 0; border-bottom:1px solid #e8f0eb; }
+    .about-step:last-child { border-bottom:0; }
+    .about-step .step { flex:0 0 32px; height:32px; display:grid; place-items:center; border-radius:10px; background:#ddf8ec; color:#087454; font:600 .75rem 'IBM Plex Mono',monospace; }
+    .about-step strong { display:block; color:#103b35; margin-bottom:.18rem; }
+    .about-step span { color:#66827b; font-size:.88rem; line-height:1.5; }
+    .about-note { border-radius:14px; padding:1rem 1.15rem; background:#fff6df; border:1px solid #f1d99e; color:#79520c; line-height:1.6; margin:.8rem 0 1rem; }
+    .about-note strong { color:#684608; }
+    .about-link { color:#087b68 !important; font-weight:600; text-decoration:none; }
+    @media(max-width:700px) { .about-hero { padding:1.5rem; } .about-hero:after { opacity:.45; } }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="about-section-kicker">01 / OVERVIEW</div>', unsafe_allow_html=True)
+    st.markdown("## What this project does")
+    st.markdown("""
+    This project is a machine-learning application that estimates COVID-19 deaths from
+    country-level epidemiological and healthcare indicators. A trained regression model
+    is exposed through a Streamlit interface for individual predictions, CSV-based batch
+    processing, visual exploration and model-related analysis.
     """)
-    
-    st.markdown("---")
-    
-    st.markdown("## Methodology")
-    
-    with st.expander("Data Input Features", expanded=True):
+
+    st.markdown("""
+    <div class="about-note"><strong>Important distinction</strong><br>
+    This is a research and educational prediction project. It does not connect to a live
+    epidemiological feed, and its output is an estimate from a model trained on historical
+    data — not a current official death count or a clinical assessment.</div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="about-section-kicker">02 / MODEL INPUTS</div>', unsafe_allow_html=True)
+    st.markdown("## Four signals go into the model")
+    st.caption("The model expects these features in this exact order.")
+    f1, f2 = st.columns(2)
+    with f1:
+        st.markdown("""<div class="about-feature"><div class="num">FEATURE 01</div><h3>Confirmed cases</h3><p>Cumulative reported COVID-19 cases. Represents the recorded scale of the outbreak in the supplied data.</p></div>""", unsafe_allow_html=True)
+        st.markdown("""<div class="about-feature"><div class="num">FEATURE 02</div><h3>Active cases</h3><p>Currently active reported cases. Provides a snapshot of the ongoing case burden.</p></div>""", unsafe_allow_html=True)
+    with f2:
+        st.markdown("""<div class="about-feature"><div class="num">FEATURE 03</div><h3>New cases · 24 hours</h3><p>Newly reported cases over a 24-hour period. Adds a short-term signal to the input data.</p></div>""", unsafe_allow_html=True)
+        st.markdown("""<div class="about-feature"><div class="num">FEATURE 04</div><h3>Hospital beds per 1,000</h3><p>A healthcare-capacity indicator representing the number of hospital beds per 1,000 people.</p></div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="about-section-kicker">03 / HOW IT WORKS</div>', unsafe_allow_html=True)
+    st.markdown("## From dataset to estimate")
+    st.markdown("""
+    <div class="about-panel">
+      <div class="about-step"><div class="step">01</div><div><strong>Prepare the dataset</strong><span>The training script reads the merged COVID-19 dataset, selects four input columns and the deaths target, and fills missing values with zero.</span></div></div>
+      <div class="about-step"><div class="step">02</div><div><strong>Split the data</strong><span>The script creates an 80/20 train-test split using a fixed random state of 42.</span></div></div>
+      <div class="about-step"><div class="step">03</div><div><strong>Train the regressor</strong><span>A Random Forest Regressor with 200 trees is fitted to the training data.</span></div></div>
+      <div class="about-step"><div class="step">04</div><div><strong>Evaluate the model</strong><span>The training script calculates R², mean absolute error, root mean squared error and a five-fold cross-validation R² score.</span></div></div>
+      <div class="about-step"><div class="step">05</div><div><strong>Generate predictions</strong><span>The Streamlit app loads the saved Joblib model and passes the four user-provided values to its predict method.</span></div></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="about-section-kicker">04 / MODEL DETAILS</div>', unsafe_allow_html=True)
+    st.markdown("## What is under the hood?")
+    d1, d2, d3 = st.columns(3)
+    with d1:
+        st.metric("Algorithm", "Random Forest")
+    with d2:
+        st.metric("Estimators", "200 trees")
+    with d3:
+        st.metric("Target", "Deaths")
+    st.markdown("""
+    <div class="about-panel">
+      <h3>Why Random Forest?</h3>
+      <p>Random Forest is an ensemble learning method that combines predictions from multiple
+      decision trees. For regression, the trees contribute to a numeric estimate. The project
+      uses scikit-learn's <code>RandomForestRegressor</code>.</p>
+      <p><strong>Evaluation transparency:</strong> the training script computes R², MAE, RMSE
+      and five-fold cross-validation R². The actual measured values are not currently displayed
+      on this page, so no accuracy percentage is claimed here.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="about-section-kicker">05 / INTERPRETATION</div>', unsafe_allow_html=True)
+    st.markdown("## Understand the result")
+    r1, r2 = st.columns(2)
+    with r1:
+        st.markdown("""<div class="about-panel"><h3>What the estimate means</h3><p>The predicted value is the model's estimated number of deaths for the four input values provided. It is generated by the trained regression model and may differ from observed outcomes.</p></div>""", unsafe_allow_html=True)
+    with r2:
+        st.markdown("""<div class="about-panel"><h3>What it does not mean</h3><p>It is not a guaranteed outcome, an individual survival probability, a medical diagnosis, or a validated forecast of future deaths.</p></div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="about-section-kicker">06 / LIMITATIONS & RESPONSIBLE USE</div>', unsafe_allow_html=True)
+    st.markdown("## Read this before using predictions")
+    st.markdown("""
+    <div class="about-note"><strong>Not for clinical or emergency decisions.</strong><br>
+    This project is intended for demonstration, learning and exploratory analysis. Do not
+    use its estimates to make decisions about an individual's care, treatment, triage,
+    hospital admission or public-health policy.</div>
+    """, unsafe_allow_html=True)
+    l1, l2 = st.columns(2)
+    with l1:
+        st.markdown("""<div class="about-panel"><h3>Data limitations</h3><ul><li>Predictions depend on the quality and coverage of the historical training data.</li><li>Reporting practices and healthcare capacity vary across regions and time.</li><li>Missing values are filled with zero in the current training script; this can affect model behaviour.</li><li>The project does not currently retrieve live data from an external API.</li></ul></div>""", unsafe_allow_html=True)
+    with l2:
+        st.markdown("""<div class="about-panel"><h3>Model limitations</h3><ul><li>Performance on historical test data does not guarantee performance on new situations.</li><li>The current training script uses a random split; it does not establish time-based validation.</li><li>The app does not provide calibrated prediction intervals or uncertainty estimates.</li><li>Relationships learned from past data may not hold during new variants or changing conditions.</li></ul></div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="about-section-kicker">07 / TECHNOLOGY</div>', unsafe_allow_html=True)
+    st.markdown("## Built with")
+    tech = st.columns(4)
+    for col, name, detail in zip(tech, ["Python", "scikit-learn", "Pandas + NumPy", "Streamlit"], ["Core application language", "Random Forest regression", "Data preparation and numerical computing", "Interactive web application"]):
+        with col:
+            st.markdown(f'<div class="about-feature"><h3>{name}</h3><p>{detail}</p></div>', unsafe_allow_html=True)
+    st.caption("Additional project libraries include Joblib for model persistence and Plotly for interactive charts.")
+
+    st.markdown('<div class="about-section-kicker">08 / PROJECT INFORMATION</div>', unsafe_allow_html=True)
+    st.markdown("## Project & creator")
+    p1, p2 = st.columns([1.2, 1])
+    with p1:
         st.markdown("""
-        The model utilizes four key input parameters:
-        
-        1. **Total Confirmed Cases**
-           - Cumulative COVID-19 cases in the region
-           - Reflects overall disease burden
-           - Primary indicator of pandemic scale
-        
-        2. **Active Cases**
-           - Currently infected individuals
-           - Excludes recovered and deceased
-           - Indicates current healthcare load
-        
-        3. **New Cases (24-hour)**
-           - Daily case increment
-           - Measures disease transmission rate
-           - Early warning indicator
-        
-        4. **Hospital Beds per 1000 Population**
-           - Healthcare capacity metric
-           - Critical infrastructure indicator
-           - Correlates with treatment capacity
-        """)
-    
-    with st.expander("Machine Learning Model"):
-        st.markdown("""
-        **Model Architecture:**
-        - Algorithm: Regression-based ML Model
-        - Training Data: Historical COVID-19 datasets
-        - Features: 4 epidemiological and healthcare metrics
-        - Output: Predicted mortality count
-        
-        **Model Performance:**
-        - Accuracy: ~94.7% on validation set
-        - Prediction Speed: <100ms
-        - Regular retraining: Quarterly updates
-        
-        **Validation Approach:**
-        - Cross-validation on historical data
-        - Out-of-sample testing
-        - Real-world scenario validation
-        """)
-    
-    with st.expander("Prediction Process"):
-        st.markdown("""
-        **Step-by-Step Workflow:**
-        
-        1. **Data Collection**
-           - User inputs current metrics
-           - Data validation and sanitization
-        
-        2. **Preprocessing**
-           - Feature normalization
-           - Outlier detection
-           - Format standardization
-        
-        3. **Model Inference**
-           - Load trained model
-           - Process features through algorithm
-           - Generate prediction
-        
-        4. **Result Analysis**
-           - Calculate derived metrics
-           - Risk level assessment
-           - Generate visualizations
-        
-        5. **Output Delivery**
-           - Display prediction with confidence
-           - Provide interpretation
-           - Enable data export
-        """)
-    
-    with st.expander("Use Cases & Applications"):
-        st.markdown("""
-        **Healthcare Organizations:**
-        - Resource allocation planning
-        - Staff scheduling optimization
-        - ICU capacity management
-        - Medical supply forecasting
-        
-        **Public Health Authorities:**
-        - Policy decision support
-        - Early warning systems
-        - Intervention effectiveness
-        - Trend monitoring
-        
-        **Research & Academia:**
-        - Epidemiological studies
-        - Educational demonstrations
-        - Model validation research
-        - Training materials
-        """)
-    
-    st.markdown("---")
-    
-    st.markdown("## Important Disclaimers")
-    
-    st.warning("""
-    **Medical Disclaimer:**
-    - This tool provides statistical estimates for planning purposes only
-    - Not intended for individual patient diagnosis or treatment
-    - Should not replace professional medical judgment
-    - Results are probabilistic, not deterministic
-    - Consult healthcare professionals for medical decisions
-    """)
-    
-    st.info("""
-    **Data Limitations:**
-    - Predictions based on historical patterns
-    - May not account for unprecedented events
-    - Accuracy depends on input data quality
-    - External factors may significantly impact outcomes
-    - Regular model updates recommended for optimal performance
-    """)
-    
-    st.markdown("---")
-    
-    st.markdown("## Technical Skills Demonstrated")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown("""
-        **Technical Skills**
-        - Machine Learning
-        - Python Programming
-        - Data Analysis
-        - Web Development
-        - Model Deployment
-        - Statistical Analysis
-        """)
-    
-    with col2:
-        st.markdown("""
-        **Tools & Frameworks**
-        - scikit-learn
-        - Streamlit
-        - Pandas & NumPy
-        - Plotly
-        - Git & GitHub
-        - Joblib
-        """)
-    
-    with col3:
-        st.markdown("""
-        **Domain Knowledge**
-        - Healthcare Analytics
-        - Epidemiology
-        - Public Health
-        - Risk Assessment
-        - Decision Support
-        - Data Visualization
-        """)
-    
-    st.markdown("---")
-    
-    st.markdown("## References & Resources")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("""
-        **Data Sources:**
-        - WHO COVID-19 Dashboard
-        - Johns Hopkins University CSSE
-        - National health ministry databases
-        - Healthcare infrastructure reports
-        
-        **Technical Documentation:**
-        - scikit-learn Documentation
-        - Streamlit Documentation
-        - COVID-19 Research Papers
-        - Healthcare Analytics Guidelines
-        """)
-    
-    with col2:
-        st.markdown("""
-        **Best Practices:**
-        - CDC Guidelines for COVID-19
-        - WHO Pandemic Response Protocols
-        - Healthcare System Standards
-        - ML Model Validation Standards
-        
-        **Learning Resources:**
-        - Machine Learning Tutorials
-        - Healthcare Data Science
-        - Epidemiology Fundamentals
-        - Public Health Analytics
-        """)
-    
-    st.markdown("---")
-    
-    st.markdown("## Developer Information")
-    
-    col1, col2 = st.columns([2, 1])
-    
-    with col1:
-        st.markdown("""
-        ### Project Details
-        - **Version:** 2.0 
-        - **Last Updated:** October 2025
-        - **Status:** Production Ready
-        - **License:** MIT License (for educational use)
-        
-        ### Contact Creator
-        - **Name:** Sudharsanam R K  
-        - **Email:** [rksudharsanam2005@gmail.com](mailto:rksudharsanam2005@gmail.com)  
-        - **LinkedIn:** [linkedin.com/in/sudharsanamrk](https://www.linkedin.com/in/sudharsanamrk/)  
-        - **GitHub:** [github.com/SudharsanamRK](https://github.com/SudharsanamRK/)
-        
-        ### Feedback & Support
-        - Got bugs? Congrats, you found a feature!
-        - Wanna collaborate? Let's build something amazing!
-        - Have suggestions? I'm all ears! 
-        """)
-    
-    with col2:
-        st.markdown("""
-        <div class="info-card">
-            <h4>Academic Use</h4>
-            <p>This project demonstrates:</p>
-            <ul>
-                <li>ML Model Development</li>
-                <li>Full-stack Development</li>
-                <li>Healthcare IT</li>
-                <li>Data Science</li>
-                <li>UI/UX Design</li>
-                <li>System Architecture</li>
-            </ul>
+        <div class="about-panel">
+          <h3>COVID-19 Mortality Prediction System</h3>
+          <p>An educational machine-learning project combining epidemiological inputs,
+          healthcare-capacity data and regression modelling.</p>
+          <p><strong>License:</strong> MIT (see repository license file)</p>
+          <p><strong>Interface:</strong> Streamlit</p>
+          <p><strong>Model artifact:</strong> Joblib (.pkl)</p>
+          <p><a class="about-link" href="https://github.com/SudharsanamRK/covid19-death-prediction" target="_blank">View source code on GitHub ↗</a></p>
         </div>
         """, unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
-    st.markdown("## Future Roadmap")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
+    with p2:
         st.markdown("""
-        **Current Features:**
-        - ✓ Single prediction mode
-        - ✓ Batch CSV processing
-        - ✓ Model insights & transparency
-        - ✓ Interactive visualizations
-        - ✓ Export functionality
-        - ✓ Risk level assessment
-        """)
-    
-    with col2:
-        st.markdown("""
-        **Upcoming Features:**
-        - Real-time API integration
-        - Multi-country comparison
-        - Time-series forecasting
-        - Mobile app version
-        - User authentication
-        - Cloud deployment
-        """)
-    
-    st.markdown("---")
-    
-    # Call to Action
-    st.success("""
-    ### Thank You for Using This System!
-    
-    If you find this tool useful, please consider:
-    - Starring the GitHub repository
-    - Sharing with colleagues and researchers
-    - Providing feedback for improvements
-    - Contributing to future development
-    
-    **Together, we can make healthcare analytics more accessible!**
+        <div class="about-panel">
+          <h3>Created by</h3>
+          <p><strong>Sudharsanam R K</strong></p>
+          <p>Computer Science & Engineering</p>
+          <p><a class="about-link" href="https://github.com/SudharsanamRK" target="_blank">GitHub profile ↗</a></p>
+          <p><a class="about-link" href="https://www.linkedin.com/in/sudharsanamrk/" target="_blank">LinkedIn profile ↗</a></p>
+          <p><a class="about-link" href="mailto:rksudharsanam2005@gmail.com">Contact by email ↗</a></p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown('<div class="about-section-kicker">09 / DOCUMENTATION</div>', unsafe_allow_html=True)
+    st.markdown("## Learn more")
+    st.markdown("""
+    - [Project repository and README](https://github.com/SudharsanamRK/covid19-death-prediction)
+    - [scikit-learn Random Forest Regressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html)
+    - [scikit-learn model evaluation](https://scikit-learn.org/stable/modules/model_evaluation.html)
+    - [Streamlit documentation](https://docs.streamlit.io/)
     """)
+
+    st.markdown("---")
+    st.caption("COVID-19 Mortality Lab · Project documentation · Estimates are for educational exploration only.")
