@@ -77,8 +77,17 @@ html, body, [class*="css"] { font-family:'DM Sans',sans-serif; }
     color:#79520c !important; background:#fff1cc !important;
 }
 [data-testid="stSidebar"] .warning-box * { color:#79520c !important; }
-[data-testid="stSidebar"] { min-width:270px !important; max-width:270px !important; }
+/* Keep the native collapse control usable. A fixed min-width on a collapsed sidebar can cover the main canvas. */
+[data-testid="stSidebar"][aria-expanded="true"] { width:270px !important; min-width:270px !important; max-width:270px !important; }
+[data-testid="stSidebar"][aria-expanded="false"] { width:0 !important; min-width:0 !important; max-width:0 !important; }
 [data-testid="stSidebar"] [data-testid="stSidebarContent"] { padding-top:1.1rem; }
+[data-testid="stSidebarCollapsedControl"] { display:flex !important; visibility:visible !important; opacity:1 !important; z-index:1000000 !important; }
+[data-testid="stSidebarCollapsedControl"] button { display:flex !important; visibility:visible !important; opacity:1 !important; background:#073b34 !important; color:#fff !important; border:1px solid rgba(255,255,255,.25) !important; border-radius:0 12px 12px 0 !important; box-shadow:0 4px 16px rgba(7,59,52,.22) !important; }
+[data-testid="stSidebarCollapsedControl"] button svg { fill:#fff !important; color:#fff !important; }
+@media (max-width:900px) {
+  [data-testid="stSidebar"][aria-expanded="true"] { width:min(86vw,300px) !important; min-width:min(86vw,300px) !important; max-width:min(86vw,300px) !important; }
+  [data-testid="stSidebar"][aria-expanded="false"] { width:0 !important; min-width:0 !important; max-width:0 !important; }
+}
 [data-testid="stSidebar"] hr { margin:.9rem 0 1.1rem; }
 .block-container { padding-top:1.45rem; }
 .dashboard-card { padding:1.15rem 1.25rem; margin:.35rem 0 .7rem; }
@@ -216,69 +225,112 @@ with st.sidebar:
 
 # PAGE 1: DASHBOARD
 if page == "Dashboard":
-    st.markdown("## Your workspace")
-    st.markdown("Start a prediction or explore the model. Your tools are one click away.")
+    st.markdown("""
+    <style>
+    .dash-hero {position:relative;overflow:hidden;padding:2.35rem 2.5rem;margin:.25rem 0 1.5rem;border-radius:25px;background:linear-gradient(115deg,#073b34 0%,#0b6657 62%,#0b9478 100%);box-shadow:0 18px 42px rgba(7,59,52,.16);animation:dashEnter .65s cubic-bezier(.2,.75,.25,1) both}
+    .dash-hero:before {content:'';position:absolute;width:330px;height:330px;right:-95px;top:-190px;border:1px solid rgba(199,243,107,.45);border-radius:50%;box-shadow:0 0 0 25px rgba(199,243,107,.07),0 0 0 55px rgba(199,243,107,.045),0 0 0 90px rgba(199,243,107,.025);animation:orbit 18s linear infinite}
+    .dash-hero:after {content:'';position:absolute;width:150px;height:150px;right:17%;bottom:-115px;border:1px solid rgba(255,255,255,.16);border-radius:50%;box-shadow:0 0 0 18px rgba(255,255,255,.035)}
+    .dash-kicker {display:inline-flex;align-items:center;gap:.55rem;color:#c7f36b;font:600 .7rem 'IBM Plex Mono',monospace;letter-spacing:.13em;margin-bottom:1.1rem}
+    .dash-kicker:before {content:'';width:8px;height:8px;border-radius:50%;background:#c7f36b;box-shadow:0 0 0 5px rgba(199,243,107,.13);animation:pulseDot 2s ease-in-out infinite}
+    .dash-hero h1 {position:relative;z-index:1;color:#fff;font-size:clamp(2.25rem,5vw,3.8rem);line-height:1.02;letter-spacing:-.06em;margin:0 0 .85rem;max-width:800px}
+    .dash-hero h1 span {color:#c7f36b}
+    .dash-hero p {position:relative;z-index:1;color:#d2eee3;max-width:730px;font-size:1.05rem;line-height:1.7;margin:0 0 1.4rem}
+    .dash-hero-foot {position:relative;z-index:1;display:flex;gap:.55rem;flex-wrap:wrap}
+    .dash-hero-foot span {color:#effff6;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.2);padding:.42rem .75rem;border-radius:999px;font:500 .66rem 'IBM Plex Mono',monospace}
+    .dash-section {margin:1.6rem 0 .8rem;color:#103b35;font-size:1.45rem;font-weight:800;letter-spacing:-.04em}
+    .dash-sub {color:#66827b;margin:-.35rem 0 1rem}
+    .dash-step {height:100%;min-height:170px;background:#fff;border:1px solid #dce9e2;border-radius:18px;padding:1.15rem 1.2rem;box-shadow:0 8px 24px rgba(16,59,53,.045);transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;animation:dashEnter .6s ease both}
+    .dash-step:hover {transform:translateY(-6px);box-shadow:0 16px 30px rgba(16,59,53,.11);border-color:#9bd9bd}
+    .dash-step .num {color:#0b9476;font:600 .7rem 'IBM Plex Mono',monospace;letter-spacing:.12em}
+    .dash-step h3 {color:#103b35;font-size:1.12rem;margin:.65rem 0 .4rem}
+    .dash-step p {color:#66827b;font-size:.9rem;line-height:1.55;margin:0}
+    .dash-action {height:100%;min-height:185px;background:linear-gradient(145deg,#fff,#f3faf5);border:1px solid #dce9e2;border-radius:19px;padding:1.25rem;box-shadow:0 8px 24px rgba(16,59,53,.045);transition:transform .25s ease,box-shadow .25s ease}
+    .dash-action:hover {transform:translateY(-5px);box-shadow:0 16px 32px rgba(16,59,53,.1)}
+    .dash-action .tag {color:#087a65;font:600 .68rem 'IBM Plex Mono',monospace;letter-spacing:.1em}
+    .dash-action h3 {color:#103b35;font-size:1.3rem;margin:.65rem 0 .45rem}
+    .dash-action p {color:#66827b;line-height:1.55;font-size:.9rem;min-height:44px}
+    .dash-explain {background:#fff;border:1px solid #dce9e2;border-radius:18px;padding:1.25rem 1.4rem;margin:.5rem 0 1rem}
+    .dash-explain h3 {color:#103b35;margin:.1rem 0 .55rem}
+    .dash-explain p,.dash-explain li {color:#55766e;line-height:1.65}
+    .dash-flow {display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin:.8rem 0}
+    .dash-flow span {background:#e7f8ee;border:1px solid #c7ead7;color:#087454;padding:.55rem .75rem;border-radius:10px;font-size:.82rem;font-weight:700}
+    .dash-flow b {color:#0b9476;font-size:1rem}
+    @keyframes dashEnter {from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes orbit {to{transform:rotate(360deg)}}
+    @keyframes pulseDot {50%{box-shadow:0 0 0 8px rgba(199,243,107,.05);opacity:.7}}
+    @media(max-width:900px){.dash-hero{padding:1.6rem 1.35rem}.dash-hero h1{font-size:2.45rem}.dash-step{min-height:145px}}
+    @media(prefers-reduced-motion:reduce){.dash-hero,.dash-step,.dash-action,.dash-kicker:before,.dash-hero:before{animation:none!important;transition:none!important}}
+    </style>
+    """, unsafe_allow_html=True)
 
-    # Compact, factual overview
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Prediction workflows", "02")
-    m2.metric("Input variables", "04")
-    m3.metric("Analysis sections", "03")
-    m4.metric("Model status", "Ready" if model is not None else "Unavailable")
+    st.markdown("""
+    <section class="dash-hero">
+      <div class="dash-kicker">PUBLIC HEALTH DATA WORKSPACE</div>
+      <h1>See the signals.<br><span>Understand the estimate.</span></h1>
+      <p>A practical workspace for exploring COVID-19 indicators, estimating mortality outcomes with a trained regression model, and comparing historical country data.</p>
+      <div class="dash-hero-foot"><span>MODEL STATUS · """ + ("READY" if model is not None else "UNAVAILABLE") + """</span><span>4 INPUT VARIABLES</span><span>2 PREDICTION WORKFLOWS</span></div>
+    </section>
+    """, unsafe_allow_html=True)
 
-    st.markdown("### Quick actions")
-    a1, a2 = st.columns(2)
+    st.markdown('<div class="dash-section">Workspace overview</div><p class="dash-sub">Choose a task to get started. Each tool is designed for a specific part of the analysis.</p>',unsafe_allow_html=True)
+    m1,m2,m3,m4=st.columns(4)
+    m1.metric("Prediction methods","02","Single and batch")
+    m2.metric("Input variables","04","Shared model inputs")
+    m3.metric("Analysis tools","03","Insights, countries, trends")
+    m4.metric("Model status","Ready" if model is not None else "Unavailable")
+    
+    st.markdown('<div class="dash-section">Quick actions</div><p class="dash-sub">Open a workflow directly without searching through menus.</p>',unsafe_allow_html=True)
+    a1,a2=st.columns(2,gap="large")
     with a1:
-        st.markdown("""
-        <div class="dashboard-card">
-            <div class="feature-badge">01 / INSTANT ESTIMATE</div>
-            <h3>Single prediction</h3>
-            <p>Enter four health-system indicators and generate a mortality estimate.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Open single prediction  →", key="go_single", use_container_width=True):
-            st.session_state["page_navigation"] = "Single Prediction"
+        st.markdown('<div class="dash-action"><div class="tag">01 / INDIVIDUAL RECORD</div><h3>Single prediction</h3><p>Enter four indicators, run the model and review the estimated number of deaths.</p></div>',unsafe_allow_html=True)
+        if st.button("Start single prediction  →",key="go_single",use_container_width=True):
+            st.session_state["page_navigation"]="Single Prediction"
             st.rerun()
     with a2:
-        st.markdown("""
-        <div class="dashboard-card">
-            <div class="feature-badge">02 / BULK ANALYSIS</div>
-            <h3>Batch prediction</h3>
-            <p>Upload a CSV dataset to process multiple records in one workflow.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Open batch prediction  →", key="go_batch", use_container_width=True):
-            st.session_state["page_navigation"] = "Batch Prediction (CSV)"
+        st.markdown('<div class="dash-action"><div class="tag">02 / MULTIPLE RECORDS</div><h3>Batch prediction</h3><p>Upload a CSV, check data quality, process valid rows and export the results.</p></div>',unsafe_allow_html=True)
+        if st.button("Open batch workspace  →",key="go_batch",use_container_width=True):
+            st.session_state["page_navigation"]="Batch Prediction (CSV)"
             st.rerun()
 
-    st.markdown("### Explore the model")
-    e1, e2, e3 = st.columns(3)
+    st.markdown('<div class="dash-section">Explore the data</div>',unsafe_allow_html=True)
+    e1,e2,e3=st.columns(3,gap="medium")
     with e1:
-        st.markdown('<div class="dashboard-card"><h4>Model insights</h4><p>Inspect feature importance and model behaviour.</p></div>', unsafe_allow_html=True)
-        if st.button("View insights", key="go_insights", use_container_width=True):
-            st.session_state["page_navigation"] = "Model Insights"
+        st.markdown('<div class="dash-step"><div class="num">TOOL 01</div><h3>Model insights</h3><p>See which input variables influence the fitted forest model and understand its evaluation limits.</p></div>',unsafe_allow_html=True)
+        if st.button("Explore model  →",key="go_insights",use_container_width=True):
+            st.session_state["page_navigation"]="Model Insights"
             st.rerun()
     with e2:
-        st.markdown('<div class="dashboard-card"><h4>Country comparison</h4><p>Compare epidemiological indicators across countries.</p></div>', unsafe_allow_html=True)
-        if st.button("Compare countries", key="go_countries", use_container_width=True):
-            st.session_state["page_navigation"] = "Country Comparison"
+        st.markdown('<div class="dash-step"><div class="num">TOOL 02</div><h3>Country comparison</h3><p>Compare reported cases, deaths, recoveries and regional patterns in the saved dataset.</p></div>',unsafe_allow_html=True)
+        if st.button("Compare countries  →",key="go_countries",use_container_width=True):
+            st.session_state["page_navigation"]="Country Comparison"
             st.rerun()
     with e3:
-        st.markdown('<div class="dashboard-card"><h4>Trend simulation</h4><p>Explore possible future case trajectories.</p></div>', unsafe_allow_html=True)
-        if st.button("Run simulation", key="go_trends", use_container_width=True):
-            st.session_state["page_navigation"] = "Trend Simulation"
+        st.markdown('<div class="dash-step"><div class="num">TOOL 03</div><h3>Trend simulation</h3><p>Change the assumed daily growth rate and compare three illustrative scenarios.</p></div>',unsafe_allow_html=True)
+        if st.button("Open simulation  →",key="go_trends",use_container_width=True):
+            st.session_state["page_navigation"]="Trend Simulation"
             st.rerun()
 
-    st.markdown("### Prediction inputs")
+    st.markdown('<div class="dash-section">How this application works</div><p class="dash-sub">A simple walkthrough from data entry to interpretation.</p>',unsafe_allow_html=True)
     st.markdown("""
-    <div class="dashboard-card">
-      <p>Both prediction workflows use the same four input signals:</p>
-      <span class="feature-badge">Confirmed cases</span>
-      <span class="feature-badge">Active cases</span>
-      <span class="feature-badge">New cases · 24h</span>
-      <span class="feature-badge">Hospital beds / 1,000</span>
+    <div class="dash-explain">
+      <h3>The prediction process</h3>
+      <p>The application uses a previously trained Random Forest regression model. You provide four numeric indicators. The model compares the input pattern with relationships learned during training and returns an estimated death count.</p>
+      <div class="dash-flow"><span>01 · Enter indicators</span><b>→</b><span>02 · Validate inputs</span><b>→</b><span>03 · Run model</span><b>→</b><span>04 · Review estimate</span></div>
+      <p>The single workflow handles one record. The batch workflow applies the same model to each valid row in an uploaded CSV.</p>
     </div>
-    """, unsafe_allow_html=True)
+    """,unsafe_allow_html=True)
+    st.markdown('<div class="dash-section">What do the four inputs mean?</div>',unsafe_allow_html=True)
+    v1,v2=st.columns(2,gap="large")
+    with v1:
+        st.markdown('<div class="dash-explain"><h3>Confirmed cases</h3><p>Total reported confirmed COVID-19 cases in the observation.</p><h3>Active cases</h3><p>Reported cases currently classified as active in the supplied data.</p></div>',unsafe_allow_html=True)
+    with v2:
+        st.markdown('<div class="dash-explain"><h3>New cases in 24 hours</h3><p>Recently reported cases, used as a short-term indicator.</p><h3>Hospital beds per 1,000</h3><p>A healthcare capacity indicator representing available beds per 1,000 people.</p></div>',unsafe_allow_html=True)
+    st.markdown("""
+    <div class="dash-explain">
+      <h3>How to interpret results responsibly</h3>
+      <p>The output is a model estimate, not a medical diagnosis, an individual risk score or a guaranteed future outcome. Results depend on the training data, the quality of the values entered and the limits of the fitted model. Country data and simulations are separate analysis tools and should not be treated as live surveillance.</p>
+    </div>
+    """,unsafe_allow_html=True)
 
 # PAGE 2: SINGLE PREDICTION
 elif page == "Single Prediction":
